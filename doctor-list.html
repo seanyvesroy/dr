@@ -6,6 +6,7 @@
     <link rel = "stylesheet" href = "static/style.css">
     <link rel = "stylesheet" href = "static/layout.css">
     <link rel = "stylesheet" href = "static/login.css">
+    <link rel = "stylesheet" href = "static/doctor-list.css">
 </head>
 <body>
 <header id="navbar">
@@ -19,7 +20,77 @@
         </ul>
     </nav>
 </header>
+
+<!-- Filter Section -->
+<div class="filters">
+    <div class="filter-item">
+        <label for="distance">Distance:</label>
+        <select id="distance" name="distance">
+            <option value="5">Within 5 miles</option>
+            <option value="10">Within 10 miles</option>
+            <option value="25">Within 25 miles</option>
+            <option value="50">Within 50 miles</option>
+            <option value="100">Within 100 miles</option>
+        </select>
+    </div>
+    
+    <div class="filter-item">
+        <label for="specialty">Specialty:</label>
+        <select id="specialty" name="specialty">
+            <option value="cardiology">Cardiology</option>
+            <option value="neurology">Neurology</option>
+            <option value="orthopedics">Orthopedics</option>
+            <option value="dermatology">Dermatology</option>
+            <option value="pediatrics">Pediatrics</option>
+            <!-- Add more specialties as needed -->
+        </select>
+    </div>
+
+    <div class="filter-item">
+        <label for="conditions">Conditions Treated:</label>
+        <select id="conditions" name="conditions">
+            <option value="diabetes">Diabetes</option>
+            <option value="hypertension">Hypertension</option>
+            <option value="arthritis">Arthritis</option>
+            <option value="asthma">Asthma</option>
+            <option value="epilepsy">Epilepsy</option>
+            <!-- Add more conditions as needed -->
+        </select>
+    </div>
+</div>
+
 <div class="container">
+    <div class="doctor-card">
+        <img src="static/images/doctor1.jpg" alt="Dr. Jane Smith">
+        <div class="doctor-details">
+            <h3>Dr. Jane Smith</h3>
+            <p>123 Main Street, Cityville, ST 12345</p>
+            <p><a href="https://www.janesmithmd.com" target="_blank">Visit Website</a></p>
+            <h4>Conditions Treated:</h4>
+            <ul class="conditions-treated">
+                <li>Condition 1</li>
+                <li>Condition 2</li>
+                <li>Condition 3</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="doctor-card">
+        <img src="static/images/doctor2.jpg" alt="Dr. John Doe">
+        <div class="doctor-details">
+            <h3>Dr. John Doe</h3>
+            <p>456 Elm Street, Townsville, ST 67890</p>
+            <p><a href="https://www.johndoemd.com" target="_blank">Visit Website</a></p>
+            <h4>Conditions Treated:</h4>
+            <ul class="conditions-treated">
+                <li>Condition A</li>
+                <li>Condition B</li>
+                <li>Condition C</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Add more doctor cards as needed -->
 </div>
 </body>
 <footer>
