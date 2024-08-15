@@ -10,16 +10,23 @@
 <body>
 <header id="navbar">
     <nav>
-        <ul class="left">
+        <ul>
             <li><a href="index.html">Home</a></li>
             <li><a href="search.html">Find a Doctor</a></li>
-        </ul>
-        <ul class="right">
             <li><a href="login.html">Login/Sign-Up</a></li>
         </ul>
     </nav>
 </header>
 <div class="container">
+    <div class="login-modal">
+        <h2>Login</h2>
+        <form action="login_processing.html" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="submit" value="Login">
+        </form>
+        <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+    </div>
 </div>
 </body>
 <footer>

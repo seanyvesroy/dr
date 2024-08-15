@@ -3,6 +3,7 @@ header {
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
+    flex-direction: row;
     position: fixed;
     width: 100%;
     background-color: #291528;
