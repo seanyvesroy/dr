@@ -22,76 +22,61 @@
     </nav>
 </header>
 
-<!-- Filter Section -->
-<div class="filters">
+<form action="/vouch_site/search/" method="post" class="filters">
+    {% csrf_token %}
+    
     <div class="filter-item">
-        <label for="distance">Distance:</label>
-        <select id="distance" name="distance">
-            <option value="5">Within 5 miles</option>
-            <option value="10">Within 10 miles</option>
-            <option value="25">Within 25 miles</option>
-            <option value="50">Within 50 miles</option>
-            <option value="100">Within 100 miles</option>
-        </select>
+        {{ form.specialty.label_tag }}
+        {{ form.specialty }}
     </div>
     
     <div class="filter-item">
-        <label for="specialty">Specialty:</label>
-        <select id="specialty" name="specialty">
-            <option value="cardiology">Cardiology</option>
-            <option value="neurology">Neurology</option>
-            <option value="orthopedics">Orthopedics</option>
-            <option value="dermatology">Dermatology</option>
-            <option value="pediatrics">Pediatrics</option>
-            <!-- Add more specialties as needed -->
-        </select>
+        {{ form.conditions_treated.label_tag }}
+        {{ form.conditions_treated }}
+    </div>
+    
+    <div class="filter-item">
+        {{ form.zip_code.label_tag }}
+        {{ form.zip_code }}
     </div>
 
     <div class="filter-item">
-        <label for="conditions">Conditions Treated:</label>
-        <select id="conditions" name="conditions">
-            <option value="diabetes">Diabetes</option>
-            <option value="hypertension">Hypertension</option>
-            <option value="arthritis">Arthritis</option>
-            <option value="asthma">Asthma</option>
-            <option value="epilepsy">Epilepsy</option>
-            <!-- Add more conditions as needed -->
-        </select>
+        <input type="submit" value="Submit" style="
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #9E829C;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        ">
     </div>
-</div>
+</form>
+
+
 
 <div class="container">
-    <div class="doctor-card">
-        <img src="static/images/doctor1.jpg" alt="Dr. Jane Smith">
-        <div class="doctor-details">
-            <h3>Dr. Jane Smith</h3>
-            <p>123 Main Street, Cityville, ST 12345</p>
-            <p><a href="https://www.janesmithmd.com" target="_blank">Visit Website</a></p>
-            <h4>Conditions Treated:</h4>
-            <ul class="conditions-treated">
-                <li>Condition 1</li>
-                <li>Condition 2</li>
-                <li>Condition 3</li>
-            </ul>
+    {% for doctor in doctors %}
+        <div class="doctor-card">
+            <img src="{{ doctor.photo.url }}" alt="Dr. {{ doctor.name }}">
+            <div class="doctor-details">
+                <h3>Dr. {{ doctor.name }}</h3>
+                <p>{{ doctor.address }}</p>
+                <p><a href="{{ doctor.website }}" target="_blank">Visit Website</a></p>
+                <h4>Conditions Treated:</h4>
+                <ul class="conditions-treated">
+                    {% for condition in doctor.conditions.all %}
+                        <li>{{ condition.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-    </div>
+    {% empty %}
+        <p>No doctors found matching your filters.</p>
+    {% endfor %}
+</div>
 
-    <div class="doctor-card">
-        <img src="static/images/doctor2.jpg" alt="Dr. John Doe">
-        <div class="doctor-details">
-            <h3>Dr. John Doe</h3>
-            <p>456 Elm Street, Townsville, ST 67890</p>
-            <p><a href="https://www.johndoemd.com" target="_blank">Visit Website</a></p>
-            <h4>Conditions Treated:</h4>
-            <ul class="conditions-treated">
-                <li>Condition A</li>
-                <li>Condition B</li>
-                <li>Condition C</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Add more doctor cards as needed -->
 </div>
 </body>
 <footer>

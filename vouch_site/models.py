@@ -1,7 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django import forms
 
 # ─── Location Helpers ─────────────────────────────
+
+DISTANCES = [5,10,25,50,100]
 
 class State(models.Model):
     name = models.CharField(max_length=50)
@@ -69,3 +72,4 @@ class Endorsement(models.Model):
     indexes = [
         models.Index(fields=['doctor', 'condition']),
     ]
+
