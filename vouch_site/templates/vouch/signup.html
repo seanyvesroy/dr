@@ -19,14 +19,21 @@
             <li><a href="/vouch_site/login/">Login/Sign-Up</a></li>
         </ul>
     </header>
-<div class="login-container">
+<div class="container">
     <div class="login-modal">
-        <h2>Login</h2>
-        <form action="/vouch_site/login/" method="post">
+        <h2>Create Account</h2>
+        <form action="/vouch_site/signup/" method="post">
             {% csrf_token %}
             {% if form.non_field_errors %}
                 <div class="error">{{ form.non_field_errors }}</div>
             {% endif %}
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" name="email" id="email" required>
+                {% if form.email.errors %}
+                    <div class="error">{{ form.email.errors }}</div>
+                {% endif %}
+            </div>
             <div class="form-group">
                 <label for="username">Username:</label>
                 <input type="text" name="username" id="username" required>
@@ -34,7 +41,6 @@
                     <div class="error">{{ form.username.errors }}</div>
                 {% endif %}
             </div>
-    
             <div class="form-group">
                 <label for="password">Password:</label>
                 <input type="password" name="password" id="password" required>
@@ -42,19 +48,15 @@
                     <div class="error">{{ form.password.errors }}</div>
                 {% endif %}
             </div>
-    
-            <!--<div class="form-group">
-                <label for="remember_me">Remember Me</label>
-                <input type="checkbox" name="remember_me" id="remember_me">
+            <div class="form-group">
+                <label for="reenter_password">Re-Enter Password:</label>
+                <input type="password" name="reenter_password" id="reenter_password" required>
+                {% if form.password.errors %}
+                    <div class="error">{{ form.password.errors }}</div>
+                {% endif %}
             </div>
-        -->
-            <div class="forgot">
-                <label><a href="/vouch_site/forgotPassword/">Forgot Password?</a></label>
-            </div>
-    
-            <input type="submit" value="Login">
+            <input type="submit" value="Create Account">
         </form>
-        <p>Don't have an account? <a href="/vouch_site/signup/">Sign Up</a></p>
     </div>
 </div>
 </body>

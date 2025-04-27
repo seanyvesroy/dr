@@ -6,7 +6,6 @@
     <title>AvouchMD</title>
     <link rel = "stylesheet" href = "{% static 'style.css' %}">
     <link rel = "stylesheet" href = "{% static 'layout.css' %}">
-    <link rel = "stylesheet" href = "{% static 'login.css' %}">
 </head>
 <body>
 <header id="navbar">
@@ -16,7 +15,11 @@
             <li><a href="/vouch_site/search/">Find a Doctor</a></li>
         </ul>
         <ul class="right">
-            <li><a href="/vouch_site/login/">Login/Sign-Up</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="/vouch_site/logout/">Logout</a></li>
+            {% else %}
+                <li><a href="/vouch_site/login/">Login/Sign-Up</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>

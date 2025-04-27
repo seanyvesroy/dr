@@ -6,7 +6,6 @@
     <title>AvouchMD</title>
     <link rel = "stylesheet" href = "{% static 'style.css' %}">
     <link rel = "stylesheet" href = "{% static 'layout.css' %}">
-    <link rel = "stylesheet" href = "{% static 'login.css' %}">
     <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}">
 </head>
 <body>
@@ -66,7 +65,7 @@
                 <p><a href="{{ doctor.website }}" target="_blank">Visit Website</a></p>
                 <h4>Conditions Treated:</h4>
                 <ul class="conditions-treated">
-                    {% for condition in doctor.conditions.all %}
+                    {% for condition in doctor.conditions_treated.all %}
                         <li>{{ condition.name }}</li>
                     {% endfor %}
                 </ul>

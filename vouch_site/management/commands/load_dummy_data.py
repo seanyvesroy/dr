@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from vouch_site.models import Doctor, Condition, City, State, ZipCode
+from vouch_site.models import Doctor, Condition, City, State, ZipCode, Specialty
 import random
 
 class Command(BaseCommand):
@@ -18,11 +18,18 @@ class Command(BaseCommand):
         city, _ = City.objects.get_or_create(name="Cityville", state=state)
         zip_obj, _ = ZipCode.objects.get_or_create(code="90210", city=city, latitude=34.0901, longitude=-118.4065)
 
+        # Create some specialties (now the model's already present)
+        specialties = ["Cardiology", "Neurology", "Orthopedics"]
+        specialty_objs = []
+        for spec in specialties:
+            obj, _ = Specialty.objects.get_or_create(name=spec)
+            specialty_objs.append(obj)
+
         # Create dummy doctors
         for i in range(5):
             doctor, created = Doctor.objects.get_or_create(
                 name=f"Dr. Test {i}",
-                specialty=random.choice(["Cardiology", "Neurology", "Orthopedics"]),
+                specialty=random.choice(specialty_objs),  # Assign the actual Specialty object
                 address=f"{100 + i} Test St, Cityville, CA",
                 phone="123-456-7890",
                 city=city,

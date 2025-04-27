@@ -1,27 +1,95 @@
 from django.shortcuts import render
-from .models import Doctor
+from .models import Doctor, User
 from .forms import DoctorSearchForm
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+
 
 def index(request):
     return render(request, "vouch/index.html")
 def search(request):
-    doctors = Doctor.objects.all()
-    if request.method == "POST":
+    if request.method == 'POST':
         form = DoctorSearchForm(request.POST)
         if form.is_valid():
-            specialty = form.specialty
-            condition = form.conditions
-            distance = form.distance
-        if specialty:
-            doctors = doctors.filter(specialty__iexact=specialty)
-        if condition:
-            doctors = doctors.filter(conditions__name__iexact=condition)  # adjust if M2M
-        if distance:
-        # You need to handle location filtering separately (see note below)
-            pass
+            specialty = form.cleaned_data['specialty']
+            conditions_treated = form.cleaned_data['conditions_treated']
+            zip_code = form.cleaned_data['zip_code']
+
+            # Now you can use these to filter doctors, for example
+            doctors = Doctor.objects.filter(
+                specialty=specialty,
+                zip_code=zip_code,
+                conditions_treated=conditions_treated
+            ).distinct()
+
+            return render(request, 'vouch/search.html', {'doctors': doctors, 'form': form})
+
     else:
-            
         form = DoctorSearchForm()
-    return render(request, "vouch/search.html",{'form':form})
-def login(request):
-    return render(request, "vouch/login.html")
+
+    return render(request, 'vouch/search.html', {'form': form})
+
+def loginAttempt(request):
+    if request.method == 'GET':
+        return render(request, "vouch/login.html")
+    else:
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            auth_login(request, user)
+            return render(request, "vouch/index.html")
+        else:
+            return render(request, "vouch/login.html", {'error': 'Invalid username or password'})
+    
+def logoutAttempt(request):
+    auth_logout(request)
+    return render(request, "vouch/index.html")
+
+def changePassword(request):
+    if request.method == 'POST':
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        if user is not None:
+            auth_login(request, user)
+            return render(request, "vouch/changePassword.html")
+        else:
+            return render(request, "vouch/login.html", {'error': 'Invalid username or password'})
+
+def forgotPassword(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        user = User.objects.filter(username=username).first()
+        if user:
+            # Here you would typically send an email with a password reset link
+            return render(request, "vouch/index.html", {'message': 'Password reset link sent to your email.'})
+        else:
+            return render(request, "vouch/forgotPassword.html", {'error': 'User not found.'})
+    return render(request, "vouch/forgotPassword.html")
+
+def signup(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        email = request.POST['email']
+        password = request.POST['password']
+        reenter_password = request.POST['reenter_password']
+        if password != reenter_password:
+            return render(request, "vouch/signup.html", {'error': 'Passwords do not match.'})
+        if User.objects.filter(username=username).exists(): 
+            return render(request, "vouch/signup.html", {'error': 'Username already exists.'})
+        if User.objects.filter(email=email).exists():
+            return render(request, "vouch/signup.html", {'error': 'Email already exists.'})
+        if len(password) < 8:
+            return render(request, "vouch/signup.html", {'error': 'Password must be at least 8 characters long.'})
+        if not any(char.isdigit() for char in password):
+            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one digit.'})
+        if not any(char.isalpha() for char in password):
+            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one letter.'})
+        if not any(char in "!@#$%^&*()-_+=<>?/|{}[]:;'" for char in password):
+            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one special character.'})
+        if not any(char.isupper() for char in password):
+            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one uppercase letter.'})
+        if not any(char.islower() for char in password):
+            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one lowercase letter.'})
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.save()
+        return render(request, "vouch/index.html", {'message': 'User created successfully.'})
+    return render(request, "vouch/signup.html")

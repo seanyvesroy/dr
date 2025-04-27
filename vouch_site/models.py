@@ -41,12 +41,18 @@ class Condition(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Specialty(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
 
 # ─── Doctors and Endorsements ─────────────────────
 
 class Doctor(models.Model):
     name = models.CharField(max_length=100)
-    specialty = models.CharField(max_length=100)
+    specialty = models.ForeignKey(Specialty, on_delete=models.SET_NULL, null=True)
     address = models.TextField()
     phone = models.CharField(max_length=20)
     image = models.CharField(null=True)

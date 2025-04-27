@@ -1,10 +1,11 @@
 from django import forms
-from .models import Doctor, Condition, ZipCode
+from .models import Specialty, Condition, ZipCode, User
 
 class DoctorSearchForm(forms.Form):
-    specialty = forms.ChoiceField(
-        choices=[(spec, spec) for spec in Doctor.objects.values_list('specialty', flat=True).distinct()],
-        required=False
+    specialty = forms.ModelChoiceField(
+        queryset=Specialty.objects.all(),
+        required=False,
+        empty_label="Select a Specialty"
     )
 
     conditions_treated = forms.ModelChoiceField(

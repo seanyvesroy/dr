@@ -2,7 +2,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 80vh;
+    height: 100vh;
     padding: 20px;
 }
 .login-modal {
@@ -13,16 +13,18 @@
     background-color: #9E829C;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 40%;
-    height: 40%;
+    width: auto;
+    height: auto;
+    padding: 3%;
 }
 
 .login-modal h2 {
+    
     margin-bottom: 20px;
     color: #F0EFF4;
     text-align: center;
 }
-
+.login-modal input[type="email"],
 .login-modal input[type="text"],
 .login-modal input[type="password"] {
     width: 100%;
@@ -52,7 +54,13 @@
     text-align: center;
     color: #F0EFF4;
 }
-
+.forgot a {
+    color: #F0EFF4;
+    text-decoration: none;
+}
+.forgot a:hover {
+    text-decoration: underline;
+}
 .login-modal p a {
     color: #F0EFF4;
     text-decoration: none;
