@@ -71,25 +71,36 @@ def signup(request):
         email = request.POST['email']
         password = request.POST['password']
         reenter_password = request.POST['reenter_password']
+        
+        errors = []  # <--- Collect multiple errors here
+        
         if password != reenter_password:
-            return render(request, "vouch/signup.html", {'error': 'Passwords do not match.'})
-        if User.objects.filter(username=username).exists(): 
-            return render(request, "vouch/signup.html", {'error': 'Username already exists.'})
+            errors.append('Passwords do not match.')
+        if User.objects.filter(username=username).exists():
+            errors.append('Username already exists.')
         if User.objects.filter(email=email).exists():
-            return render(request, "vouch/signup.html", {'error': 'Email already exists.'})
+            errors.append('Email already exists.')
         if len(password) < 8:
-            return render(request, "vouch/signup.html", {'error': 'Password must be at least 8 characters long.'})
+            errors.append('Password must be at least 8 characters long.')
         if not any(char.isdigit() for char in password):
-            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one digit.'})
+            errors.append('Password must contain at least one digit.')
         if not any(char.isalpha() for char in password):
-            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one letter.'})
+            errors.append('Password must contain at least one letter.')
         if not any(char in "!@#$%^&*()-_+=<>?/|{}[]:;'" for char in password):
-            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one special character.'})
+            errors.append('Password must contain at least one special character.')
         if not any(char.isupper() for char in password):
-            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one uppercase letter.'})
+            errors.append('Password must contain at least one uppercase letter.')
         if not any(char.islower() for char in password):
-            return render(request, "vouch/signup.html", {'error': 'Password must contain at least one lowercase letter.'})
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.save()
-        return render(request, "vouch/index.html", {'message': 'User created successfully.'})
+            errors.append('Password must contain at least one lowercase letter.')
+
+        # If there are any errors, re-render the signup page with them
+        if errors:
+            return render(request, "vouch/signup.html", {'errors': errors})
+        else:
+        # Otherwise, create the user
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+            auth_login(request, user)
+            return render(request, "vouch/index.html", {'message': 'User created successfully.'})
     return render(request, "vouch/signup.html")
+    
