@@ -2,6 +2,9 @@ from django import forms
 from .models import Specialty, Condition, ZipCode, User
 
 class DoctorSearchForm(forms.Form):
+    fName = forms.CharField(max_length=100, required=False, label="First Name")
+    lName = forms.CharField(max_length=100, required=False, label="Last Name")
+    
     specialty = forms.ModelChoiceField(
         queryset=Specialty.objects.all(),
         required=False,

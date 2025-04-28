@@ -10,19 +10,27 @@ def search(request):
     if request.method == 'POST':
         form = DoctorSearchForm(request.POST)
         if form.is_valid():
+            first_name = form.cleaned_data['fName']
+            last_name = form.cleaned_data['lName']
             specialty = form.cleaned_data['specialty']
             conditions_treated = form.cleaned_data['conditions_treated']
             zip_code = form.cleaned_data['zip_code']
 
-            # Now you can use these to filter doctors, for example
-            doctors = Doctor.objects.filter(
-                specialty=specialty,
-                zip_code=zip_code,
-                conditions_treated=conditions_treated
-            ).distinct()
+            filter_args = {}
+            if first_name:
+                filter_args['first_name__icontains'] = first_name
+            if last_name:
+                filter_args['last_name__icontains'] = last_name
+            if specialty:
+                filter_args['specialty'] = specialty
+            if zip_code:
+                filter_args['zip_code'] = zip_code
+            if conditions_treated:
+                filter_args['conditions_treated'] = conditions_treated
+
+            doctors = Doctor.objects.filter(**filter_args).distinct()
 
             return render(request, 'vouch/search.html', {'doctors': doctors, 'form': form})
-
     else:
         form = DoctorSearchForm()
 

@@ -1,7 +1,7 @@
+/* Filters */
 .filters {
     display: flex;
     justify-content: center;
-
     padding: 1%;
     background-color: #f4f4f4;
     border-radius: 8px;
@@ -23,13 +23,30 @@
     color: #333;
 }
 
+.filter-item input,
 .filter-item select {
     padding: 5px;
     border-radius: 4px;
     border: 1px solid #ccc;
+    width: 100%; /* Takes full width of the parent */
+    max-width: 200px; /* Never wider than 200px */
+    box-sizing: border-box; /* Prevents padding from making them overflow */
 }
 
-/* Styles for the doctor boxes */
+@media (max-width: 600px) {
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-item {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}
+
+/* Styles for the doctor cards */
 .doctor-card {
     background-color: #f4f4f4;
     padding: 20px;
@@ -81,11 +98,4 @@
 
 .conditions-treated li {
     margin-bottom: 5px;
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
 }

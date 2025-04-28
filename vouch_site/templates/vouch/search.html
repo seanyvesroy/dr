@@ -5,8 +5,8 @@
     <meta charset = "UTF-8">
     <title>AvouchMD</title>
     <link rel = "stylesheet" href = "{% static 'style.css' %}">
-    <link rel = "stylesheet" href = "{% static 'layout.css' %}">
-    <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}">
+    <link rel = "stylesheet" href = "{% static 'layout.css' %}?v=5">
+    <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}?v=5">
 </head>
 <body>
 <header id="navbar">
@@ -16,13 +16,27 @@
             <li><a href="/vouch_site/search/">Find a Doctor</a></li>
         </ul>
         <ul class="right">
-            <li><a href="/vouch_site/login/">Login/Sign-Up</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="/vouch_site/logout/">Logout</a></li>
+            {% else %}
+                <li><a href="/vouch_site/login/">Login/Sign-Up</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>
 
 <form action="/vouch_site/search/" method="post" class="filters">
     {% csrf_token %}
+    
+    <div class="filter-item">
+        {{ form.fName.label_tag }}
+        {{ form.fName }}
+    </div>
+    
+    <div class="filter-item">
+        {{ form.lName.label_tag }}
+        {{ form.lName }}
+    </div>
     
     <div class="filter-item">
         {{ form.specialty.label_tag }}
@@ -63,6 +77,8 @@
                 <h3>Dr. {{ doctor.name }}</h3>
                 <p>{{ doctor.address }}</p>
                 <p><a href="{{ doctor.website }}" target="_blank">Visit Website</a></p>
+                <h4>Specialty:</h4>
+                <p>{{ doctor.specialty.name }}</p>
                 <h4>Conditions Treated:</h4>
                 <ul class="conditions-treated">
                     {% for condition in doctor.conditions_treated.all %}
