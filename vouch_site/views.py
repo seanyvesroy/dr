@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from .models import Doctor, User
+from .models import Doctor, User, Endorsement
+from django.db.models import Count
 from .forms import DoctorSearchForm
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
@@ -29,8 +30,15 @@ def search(request):
                 filter_args['conditions_treated'] = conditions_treated
 
             doctors = Doctor.objects.filter(**filter_args).distinct()
+            doctor_endorsements = {}
 
-            return render(request, 'vouch/search.html', {'doctors': doctors, 'form': form})
+            for doctor in doctors:
+                endorsements_by_condition = Endorsement.objects.filter(doctor=doctor).values('condition__id', 'condition__name').annotate(count=Count('condition'))
+
+            doctor_endorsements[doctor.id] = {item['condition__id']: item['count'] for item in endorsements_by_condition}
+
+            context = {'doctors': doctors,'doctor_endorsements': doctor_endorsements,}
+            return render(request, 'vouch/search.html', {'doctors': doctors, 'form': form, 'context': context})
     else:
         form = DoctorSearchForm()
 

@@ -7,6 +7,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         doc = Doctor.objects.first()
         if doc:
+            doc.name = "John Doe"
             doc.first_name = "John"
             doc.last_name = "Doe"
             doc.suffix = "MD"

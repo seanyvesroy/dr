@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load custom_tags %}
 <html lang="en">
 <head>
     <meta charset = "UTF-8">
@@ -76,15 +77,28 @@
             <div class="doctor-details">
                 <h3>Dr. {{ doctor.name }}</h3>
                 <p>{{ doctor.address }}</p>
+                <p>{{ doctor.phone }}</p>
                 <p><a href="{{ doctor.website }}" target="_blank">Visit Website</a></p>
+                
                 <h4>Specialty:</h4>
                 <p>{{ doctor.specialty.name }}</p>
+
                 <h4>Conditions Treated:</h4>
                 <ul class="conditions-treated">
                     {% for condition in doctor.conditions_treated.all %}
-                        <li>{{ condition.name }}</li>
+                        {% with doctor_endorsements|dict_key:doctor.id as endorsements %}
+                            {% with endorsements|dict_key:condition.id as count %}
+                                <li>
+                                    {{ condition.name }}
+                                    {% if count %}
+                                        ({{ count }} endorsements)
+                                    {% endif %}
+                                </li>
+                            {% endwith %}
+                        {% endwith %}
                     {% endfor %}
                 </ul>
+                
             </div>
         </div>
     {% empty %}
