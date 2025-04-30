@@ -1,16 +1,35 @@
+import random
 from django.core.management.base import BaseCommand
-from vouch_site.models import User  # <--- use your custom User model!!
+from vouch_site.models import Doctor, Endorsement,  User
 
 class Command(BaseCommand):
-    help = 'Create a test user for login testing.'
+    help = "Populate sample endorsements for doctors based on the conditions they treat"
 
     def handle(self, *args, **kwargs):
-        username = "testuser"
-        email = "testuser@example.com"
-        password = "password123"
+        doctors = Doctor.objects.prefetch_related('conditions_treated')
+        users = list(User.objects.prefetch_related('conditions').all())
 
-        if not User.objects.filter(username=username).exists():
-            User.objects.create_user(username=username, email=email, password=password)
-            self.stdout.write(self.style.SUCCESS(f"Test user '{username}' created with password '{password}'"))
-        else:
-            self.stdout.write(self.style.WARNING(f"Test user '{username}' already exists."))
+        count = 0
+
+        for doctor in doctors:
+            for condition in doctor.conditions_treated.all():
+                # Find users who have this condition
+                matching_users = [user for user in users if condition in user.conditions.all()]
+
+                if not matching_users:
+                    continue
+
+                # Pick a random matching user
+                user = random.choice(matching_users)
+
+                # Only create endorsement if it doesn’t already exist
+                endorsement, created = Endorsement.objects.get_or_create(
+                    user=user,
+                    doctor=doctor,
+                    condition=condition,
+                    defaults={'comment': f"{doctor.name} really helped me with {condition.name}!"}
+                )
+                if created:
+                    count += 1
+
+        self.stdout.write(self.style.SUCCESS(f'✅ Created {count} new endorsements.'))
