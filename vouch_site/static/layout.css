@@ -80,6 +80,26 @@ nav ul li a:hover::after {
     margin-top: 80px; /* Ensure the filters appear below the navbar */
 }
 
+.container {
+    max-width: 800px;
+    margin: 100px auto;
+    padding: 0 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.container h1,
+.container h2,
+.container h3 {
+    margin: 20px 0;
+    color: #9E829C;
+}
+
+.container p {
+    line-height: 1.6;
+    color: #555;
+}
 
 /* Footer */
 footer {

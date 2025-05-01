@@ -7,7 +7,8 @@ from collections import defaultdict
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
 
 
 def index(request):
@@ -145,27 +146,39 @@ def signup(request):
     return render(request, "vouch/signup.html")
 
 @login_required
+@require_POST
+@csrf_protect
 def endorse_doctor(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
-
     doctor_id = request.POST.get('doctor_id')
-    condition_ids = request.POST.getlist('conditions')
+    condition_ids = request.POST.getlist('conditions[]')  # Fetch multiple condition IDs
+
+    if not doctor_id or not condition_ids:
+        return JsonResponse({'error': 'Doctor ID and condition(s) are required.'}, status=400)
 
     try:
         doctor = Doctor.objects.get(id=doctor_id)
-        for condition_id in condition_ids:
+    except Doctor.DoesNotExist:
+        return JsonResponse({'error': 'Doctor not found.'}, status=404)
+
+    for condition_id in condition_ids:
+        try:
             condition = Condition.objects.get(id=condition_id)
+
+            # Add condition to doctor if not already associated
+            if condition not in doctor.conditions_treated.all():
+                doctor.conditions_treated.add(condition)
+
+            # Create endorsement if it doesn't already exist
             Endorsement.objects.get_or_create(
                 doctor=doctor,
                 condition=condition,
                 user=request.user
             )
 
-        return JsonResponse({'success': True})
-    except (Doctor.DoesNotExist, Condition.DoesNotExist):
-        return JsonResponse({'error': 'Invalid doctor or condition'}, status=400)
+        except Condition.DoesNotExist:
+            continue  # Skip invalid condition IDs
 
+    return JsonResponse({'success': True})
 
 @login_required
 def endorse_view(request):

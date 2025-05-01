@@ -114,18 +114,19 @@
             {% csrf_token %}
             <input type="hidden" id="doctorId" name="doctor_id" value="">
             
-            <!-- Dropdown for conditions -->
             <p>Please select the conditions you were treated for:</p>
-            <select id="conditionsDropdown" name="conditions" multiple size="5" class="styled-dropdown">
+            <select id="conditionsDropdown" name="conditions[]" multiple>
                 {% for condition in conditions %}
                     <option value="{{ condition.id }}">{{ condition.name }}</option>
                 {% endfor %}
-            </select>
-                  
-            
+            </select>            
+        
             <div id="conditionsList"></div>
             <button type="submit" class="submit-btn">Submit Endorsement</button>
         </form>
+        <div id="endorseSuccessMessage" style="color: green; display: none; margin-top: 10px;">
+            Endorsement(s) submitted successfully!
+        </div>
     </div>
 </div>
 
@@ -142,6 +143,7 @@
     
     // Function to open the modal
     function openEndorseModal(doctorId, conditionsList) {
+        sessionStorage.setItem('scrollY', window.scrollY);
         const modal = document.getElementById('endorseModal');
         document.getElementById('doctorId').value = doctorId;  // Set the hidden doctorId input value
         modal.style.display = "block";  // Show the modal
@@ -190,7 +192,58 @@
         });
     });
 </script>
+<script>
+    document.getElementById('endorseForm').addEventListener('submit', function(event) {
+        event.preventDefault();
     
+        const form = event.target;
+        const formData = new FormData(form);
+        const modal = document.getElementById('endorseModal');
+    
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Optional: show a temporary success message
+                const successMsg = document.createElement('p');
+                successMsg.textContent = "Endorsement submitted successfully!";
+                successMsg.style.color = "green";
+                form.appendChild(successMsg);
+    
+                // Close the modal after a short delay
+                setTimeout(() => {
+                    modal.style.display = "none";
+                    window.location.reload();  // Then refresh the page
+                }, 1000); // 1 second delay
+            } else {
+                alert('Something went wrong: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the endorsement.');
+        });
+    });
+    </script>
+    <script>
+        window.addEventListener('load', () => {
+            const scrollY = sessionStorage.getItem('scrollY');
+            if (scrollY !== null) {
+                window.scrollTo(0, parseInt(scrollY));
+                sessionStorage.removeItem('scrollY');  // Clean up after restoring
+            }
+        });
+        </script>
+        
     
 
 </body>
