@@ -75,6 +75,13 @@ class Endorsement(models.Model):
 
     class Meta:
         unique_together = ('user', 'doctor', 'condition')
+        indexes = [
+            models.Index(fields=['doctor', 'condition']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} endorsed {self.doctor.name} for {self.condition.name} on {self.created_at.date()}"
+
 
 # ─── Indexing Optimization ────────────────────────
 

@@ -1,35 +1,38 @@
-import random
 from django.core.management.base import BaseCommand
-from vouch_site.models import Doctor, Endorsement,  User
+from vouch_site.models import Doctor, User, Condition, Endorsement
+import random
 
 class Command(BaseCommand):
-    help = "Populate sample endorsements for doctors based on the conditions they treat"
+    help = "Assign conditions to users and populate endorsements based on doctors and matching conditions"
 
     def handle(self, *args, **kwargs):
-        doctors = Doctor.objects.prefetch_related('conditions_treated')
-        users = list(User.objects.prefetch_related('conditions').all())
+        users = User.objects.all()
+        doctors = Doctor.objects.prefetch_related("conditions_treated").all()
+        all_conditions = list(Condition.objects.all())
 
+        # Step 1: Assign 1-3 random conditions to each user
+        for user in users:
+            if user.conditions.count() == 0:
+                assigned = random.sample(all_conditions, k=random.randint(1, min(3, len(all_conditions))))
+                user.conditions.set(assigned)
+                self.stdout.write(f"Assigned {len(assigned)} condition(s) to {user.username}")
+
+        # Step 2: Create endorsements for doctors treating those conditions
         count = 0
-
-        for doctor in doctors:
-            for condition in doctor.conditions_treated.all():
-                # Find users who have this condition
-                matching_users = [user for user in users if condition in user.conditions.all()]
-
-                if not matching_users:
+        for user in users:
+            for condition in user.conditions.all():
+                eligible_doctors = [doc for doc in doctors if condition in doc.conditions_treated.all()]
+                if not eligible_doctors:
                     continue
 
-                # Pick a random matching user
-                user = random.choice(matching_users)
-
-                # Only create endorsement if it doesn’t already exist
-                endorsement, created = Endorsement.objects.get_or_create(
-                    user=user,
-                    doctor=doctor,
-                    condition=condition,
-                    defaults={'comment': f"{doctor.name} really helped me with {condition.name}!"}
-                )
-                if created:
+                doctor = random.choice(eligible_doctors)
+                if not Endorsement.objects.filter(user=user, doctor=doctor, condition=condition).exists():
+                    Endorsement.objects.create(
+                        user=user,
+                        doctor=doctor,
+                        condition=condition,
+                        comment=f"Dr. {doctor.name} helped me with {condition.name.lower()}."
+                    )
                     count += 1
 
-        self.stdout.write(self.style.SUCCESS(f'✅ Created {count} new endorsements.'))
+        self.stdout.write(self.style.SUCCESS(f"Created {count} endorsements."))

@@ -7,7 +7,7 @@
     <title>AvouchMD</title>
     <link rel = "stylesheet" href = "{% static 'style.css' %}">
     <link rel = "stylesheet" href = "{% static 'layout.css' %}?v=5">
-    <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}?v=5">
+    <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}?v=6">
 </head>
 <body>
 <header id="navbar">
@@ -91,7 +91,7 @@
                                 <li>
                                     {{ condition.name }}
                                     {% if count %}
-                                        ({{ count }} endorsements)
+                                        ({{ count }} endorsement)
                                     {% endif %}
                                 </li>
                             {% endwith %}
@@ -100,18 +100,71 @@
                 </ul>
                 
             </div>
+            {% if user.is_authenticated %}
+                <button class="endorse-btn" onclick="openEndorseModal('{{ doctor.id }}')">
+                    I have seen this doctor
+                </button>
+            {% endif %}
         </div>
     {% empty %}
         <p>No doctors found matching your filters.</p>
     {% endfor %}
 </div>
 
+<div id="endorseModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Endorse Doctor</h2>
+        <form id="endorseForm" method="POST" action="/vouch_site/endorse/">
+            {% csrf_token %}
+            <input type="hidden" id="doctorId" name="doctor_id" value="">
+            <p>Please select the conditions you were treated for:</p>
+            <div id="conditionsList"></div>
+            <button type="submit" class="submit-btn">Submit Endorsement</button>
+        </form>
+    </div>
 </div>
-</body>
+</div>
+
 <footer>
     <div class="footer">
         <p>&copy; 2024 AvouchMD.</p>
         <p>Contact Us <a href="/vouch_site/contact/">Here</a></p>
     </div>
 </footer>
+<script>
+    // Assign the serialized doctors data to a JavaScript variable
+    const doctorsData = JSON.parse('{{ doctors_json|escapejs }}');
+    
+    // Function to open the modal
+    function openEndorseModal(doctorId) {
+        const modal = document.getElementById('endorseModal');
+        document.getElementById('doctorId').value = doctorId;  // Set the hidden doctorId input value
+        modal.style.display = "block";  // Show the modal
+        
+        // Get conditions for this doctor and populate the form
+        const conditionsList = document.getElementById('conditionsList');
+        conditionsList.innerHTML = '';  // Clear the existing conditions list
+        
+        // Find the doctor by ID (loop through doctors dynamically rendered by Django)
+        const doctor = doctorsData.find(d => d.pk === doctorId);  // Adjusted to work with 'pk' (primary key)
+    
+        if (doctor) {
+            doctor.fields.conditions_treated.forEach(condition => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label>
+                        <input type="checkbox" name="conditions[]" value="${condition.id}">
+                        ${condition.name}
+                    </label>
+                `;
+                conditionsList.appendChild(div);
+            });
+        }
+    }
+    </script>
+    
+    
+
+</body>
 </html>

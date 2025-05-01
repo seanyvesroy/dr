@@ -1,12 +1,21 @@
-from django.shortcuts import render
-from .models import Doctor, User, Endorsement
+from django.shortcuts import render, redirect
+from django.http import JsonResponse   
+from .models import Doctor, User, Endorsement, Condition
 from django.db.models import Count
 from .forms import DoctorSearchForm
+from collections import defaultdict
+from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
 
 def index(request):
     return render(request, "vouch/index.html")
+from collections import defaultdict
+from django.shortcuts import render
+from .models import Doctor, Endorsement
+from .forms import DoctorSearchForm
+
 def search(request):
     if request.method == 'POST':
         form = DoctorSearchForm(request.POST)
@@ -30,15 +39,20 @@ def search(request):
                 filter_args['conditions_treated'] = conditions_treated
 
             doctors = Doctor.objects.filter(**filter_args).distinct()
-            doctor_endorsements = {}
 
-            for doctor in doctors:
-                endorsements_by_condition = Endorsement.objects.filter(doctor=doctor).values('condition__id', 'condition__name').annotate(count=Count('condition'))
+            # Build endorsement counts per doctor + condition
+            doctor_endorsements = defaultdict(lambda: defaultdict(int))
+            endorsements = Endorsement.objects.all()
+            for endorsement in endorsements:
+                doctor_endorsements[endorsement.doctor.id][endorsement.condition.id] += 1
 
-            doctor_endorsements[doctor.id] = {item['condition__id']: item['count'] for item in endorsements_by_condition}
-
-            context = {'doctors': doctors,'doctor_endorsements': doctor_endorsements,}
-            return render(request, 'vouch/search.html', {'doctors': doctors, 'form': form, 'context': context})
+            # Send all data to template
+            context = {
+                'form': form,
+                'doctors': doctors,
+                'doctor_endorsements': doctor_endorsements,
+            }
+            return render(request, 'vouch/search.html', context)
     else:
         form = DoctorSearchForm()
 
@@ -119,4 +133,36 @@ def signup(request):
             auth_login(request, user)
             return render(request, "vouch/index.html", {'message': 'User created successfully.'})
     return render(request, "vouch/signup.html")
+
+@login_required
+def endorse_doctor(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
     
+    doctor_id = request.POST.get('doctor_id')
+    conditions = request.POST.getlist('conditions[]')
+    
+    try:
+        doctor = Doctor.objects.get(id=doctor_id)
+        
+        # Create endorsements for each selected condition
+        for condition_id in conditions:
+            condition = Condition.objects.get(id=condition_id)
+            Endorsement.objects.get_or_create(
+                doctor=doctor,
+                condition=condition,
+                user=request.user
+            )
+        
+        return JsonResponse({'success': True})
+        
+    except (Doctor.DoesNotExist, Condition.DoesNotExist):
+        return JsonResponse({'error': 'Invalid doctor or condition'}, status=400)
+    
+def search_view(request):
+    doctors = Doctor.objects.all()  # or your query logic
+    
+    # Convert the QuerySet to JSON serializable format
+    doctors_json = serializers.serialize('json', doctors)
+    
+    return render(request, 'vouch/search.html', {'doctors_json': doctors_json})
