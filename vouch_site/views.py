@@ -9,12 +9,9 @@ from django.core import serializers
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
 
+
 def index(request):
     return render(request, "vouch/index.html")
-from collections import defaultdict
-from django.shortcuts import render
-from .models import Doctor, Endorsement
-from .forms import DoctorSearchForm
 
 def search(request):
     if request.method == 'POST':
