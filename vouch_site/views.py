@@ -13,6 +13,14 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 def index(request):
     return render(request, "vouch/index.html")
 
+#def search_view(request):
+#    doctors = Doctor.objects.all()  # or your query logic
+    
+    # Convert the QuerySet to JSON serializable format
+#    doctors_json = serializers.serialize('json', doctors)
+    
+#    return render(request, 'vouch/search.html', {'doctors_json': doctors_json})
+
 def search(request):
     if request.method == 'POST':
         form = DoctorSearchForm(request.POST)
@@ -42,12 +50,15 @@ def search(request):
             endorsements = Endorsement.objects.all()
             for endorsement in endorsements:
                 doctor_endorsements[endorsement.doctor.id][endorsement.condition.id] += 1
+            
+            doctors_json = serializers.serialize('json', doctors)
 
             # Send all data to template
             context = {
                 'form': form,
-                'doctors': doctors,
+                'doctors': doctors,#_json,
                 'doctor_endorsements': doctor_endorsements,
+                'doctors_json': doctors_json,
             }
             return render(request, 'vouch/search.html', context)
     else:
@@ -155,15 +166,6 @@ def endorse_doctor(request):
         
     except (Doctor.DoesNotExist, Condition.DoesNotExist):
         return JsonResponse({'error': 'Invalid doctor or condition'}, status=400)
-    
-def search_view(request):
-    doctors = Doctor.objects.all()  # or your query logic
-    
-    # Convert the QuerySet to JSON serializable format
-    doctors_json = serializers.serialize('json', doctors)
-    
-    return render(request, 'vouch/search.html', {'doctors_json': doctors_json})
-
 
 def endorse_view(request):
     conditions = Condition.objects.all()  # Fetch all conditions from the database
