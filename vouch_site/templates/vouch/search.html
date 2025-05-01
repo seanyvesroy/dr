@@ -5,9 +5,12 @@
 <head>
     <meta charset = "UTF-8">
     <title>AvouchMD</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <link rel = "stylesheet" href = "{% static 'style.css' %}">
     <link rel = "stylesheet" href = "{% static 'layout.css' %}">
     <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}">
+    
 </head>
 <body>
 <header id="navbar">
@@ -113,11 +116,12 @@
             
             <!-- Dropdown for conditions -->
             <p>Please select the conditions you were treated for:</p>
-            <select id="conditionsDropdown" name="conditions" multiple>
+            <select id="conditionsDropdown" name="conditions" multiple size="5" class="styled-dropdown">
                 {% for condition in conditions %}
                     <option value="{{ condition.id }}">{{ condition.name }}</option>
                 {% endfor %}
-            </select>            
+            </select>
+                  
             
             <div id="conditionsList"></div>
             <button type="submit" class="submit-btn">Submit Endorsement</button>
@@ -148,19 +152,6 @@
         
         // Find the doctor by ID (loop through doctors dynamically rendered by Django)
         const doctor = doctorsData.find(d => d.pk === doctorId);  // Adjusted to work with 'pk' (primary key)
-    
-        if (user) {
-            user.conditions.forEach(condition => {
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <label>
-                        <input type="checkbox" name="conditions[]" value="${condition.id}">
-                        ${condition.name}
-                    </label>
-                `;
-                conditionsList.appendChild(div);
-            });
-        }
     }
 </script>
 <script>
@@ -185,6 +176,19 @@
         doctorIdInput.value = doctorId;
         modal.style.display = "block";
     }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const conditionDropdown = document.getElementById('conditionsDropdown');
+        const choices = new Choices(conditionDropdown, {
+            removeItemButton: true,
+            placeholderValue: 'Select your conditions',
+            searchPlaceholderValue: 'Search conditions',
+            classNames: {
+                containerInner: 'choices-inner-custom', // custom class for styling
+            }
+        });
+    });
 </script>
     
     

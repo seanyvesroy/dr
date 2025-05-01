@@ -52,12 +52,13 @@ def search(request):
                 doctor_endorsements[endorsement.doctor.id][endorsement.condition.id] += 1
             
             doctors_json = serializers.serialize('json', doctors)
-
+            user_conditions = request.user.conditions.all()
             # Send all data to template
             context = {
                 'form': form,
                 'doctors': doctors,#_json,
                 'doctor_endorsements': doctor_endorsements,
+                'conditions': user_conditions,
                 'doctors_json': doctors_json,
             }
             return render(request, 'vouch/search.html', context)
@@ -147,27 +148,24 @@ def signup(request):
 def endorse_doctor(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
-    
-    doctor_id = request.POST.get('doctor_id')
-    conditions = request.user.conditions.all()
 
-    
+    doctor_id = request.POST.get('doctor_id')
+    condition_ids = request.POST.getlist('conditions')
+
     try:
         doctor = Doctor.objects.get(id=doctor_id)
-        
-        # Create endorsements for each selected condition
-        for condition_id in conditions:
+        for condition_id in condition_ids:
             condition = Condition.objects.get(id=condition_id)
             Endorsement.objects.get_or_create(
                 doctor=doctor,
                 condition=condition,
                 user=request.user
             )
-        
+
         return JsonResponse({'success': True})
-        
     except (Doctor.DoesNotExist, Condition.DoesNotExist):
         return JsonResponse({'error': 'Invalid doctor or condition'}, status=400)
+
 
 @login_required
 def endorse_view(request):

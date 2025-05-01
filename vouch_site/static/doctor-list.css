@@ -32,6 +32,7 @@
     max-width: 200px; /* Never wider than 200px */
     box-sizing: border-box; /* Prevents padding from making them overflow */
 }
+.submit-btn,
 .endorse-btn,
 input[type="submit" i] {
     margin-top: 20px;
@@ -123,6 +124,8 @@ input[type="submit" i] {
     background-color: rgba(0, 0, 0, 0.4); /* Dark background with opacity */
 }
 
+
+
 /* Modal Content */
 .modal-content {
     background-color: white;
@@ -135,12 +138,8 @@ input[type="submit" i] {
 
 /* Close button */
 .close {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    top: 10px;
-    right: 20px;
+    color: #000000;
+    float: right;
     cursor: pointer;
 }
 
@@ -149,4 +148,37 @@ input[type="submit" i] {
     color: black;
     text-decoration: none;
     cursor: pointer;
+}
+/* Override Choices.js styling to match site */
+.choices-inner-custom .choices__inner {
+    background-color: #f4f4f4;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    color: #333;
+    font-size: 16px;
+}
+
+.choices__list--multiple .choices__item {
+    background-color: #9E829C;
+    border-radius: 4px;
+    color: white;
+    margin: 3px 4px;
+    padding: 4px 8px;
+    font-weight: bold;
+}
+.choices__input {
+    cursor: pointer;
+}
+.choices__input:hover{
+    cursor: pointer;
+}
+
+.choices__item--selectable {
+    background-color: #eaeaea;
+    color: #333;
+}
+
+.choices__button {
+    color: white;
 }
