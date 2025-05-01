@@ -53,8 +53,12 @@ def search(request):
                 doctor_endorsements[endorsement.doctor.id][endorsement.condition.id] += 1
             
             doctors_json = serializers.serialize('json', doctors)
-            user_conditions = request.user.conditions.all()
-            # Send all data to template
+            if request.user.is_authenticated:
+                # Fetch the user's conditions from the database
+                user_conditions = request.user.conditions.all()
+            else:
+                # If the user is not authenticated, set user_conditions to an empty list
+                user_conditions = []
             context = {
                 'form': form,
                 'doctors': doctors,#_json,

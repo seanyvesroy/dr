@@ -4,7 +4,9 @@ html, body {
     padding: 0;
     display: flex;
     flex-direction: column;
+    align-items: center;
     font-family: Arial, sans-serif;
+    width: 100%;
 }
 
 /* Header */
@@ -71,25 +73,19 @@ nav ul li a:hover::after {
     padding: 2rem;
     overflow-y: auto; /* Allow scrolling if content overflows */
     max-height: calc(100vh - 60px); /* Ensure it doesn't exceed viewport height */
-    width: 100%;
+    width: 72%;
     box-sizing: border-box;
-}
-
-/* Search form (filters) */
-.filters {
-    margin-top: 80px; /* Ensure the filters appear below the navbar */
-}
-
-.container {
-    max-width: 800px;
-    margin: 100px auto;
-    padding: 0 20px;
     background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
-.container h1,
+
+
+.container h1
+{
+    margin: 50px 0;
+
+    color: #9E829C;
+}
 .container h2,
 .container h3 {
     margin: 20px 0;
