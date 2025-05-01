@@ -78,7 +78,8 @@ def loginAttempt(request):
             return render(request, "vouch/index.html")
         else:
             return render(request, "vouch/login.html", {'error': 'Invalid username or password'})
-    
+
+@login_required
 def logoutAttempt(request):
     auth_logout(request)
     return render(request, "vouch/index.html")
@@ -148,7 +149,7 @@ def endorse_doctor(request):
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
     
     doctor_id = request.POST.get('doctor_id')
-    conditions = request.POST.getlist('conditions[]')
+    conditions = User.objects(id=request.user.id).values_list('conditions', flat=True)
     
     try:
         doctor = Doctor.objects.get(id=doctor_id)

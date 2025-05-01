@@ -7,6 +7,7 @@ from django import forms
 DISTANCES = [5,10,25,50,100]
 
 class State(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=2)  # CA, NY, etc.
 
@@ -14,6 +15,7 @@ class State(models.Model):
         return self.code
 
 class City(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     state = models.ForeignKey(State, on_delete=models.CASCADE)
 
@@ -21,6 +23,7 @@ class City(models.Model):
         return f"{self.name}, {self.state.code}"
 
 class ZipCode(models.Model):
+    id = models.AutoField(primary_key=True)
     code = models.CharField(max_length=10, unique=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     latitude = models.FloatField(null=True, blank=True)
@@ -36,6 +39,7 @@ class User(AbstractUser):
     conditions = models.ManyToManyField("Condition", blank=True)
 
 class Condition(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
 
@@ -43,6 +47,7 @@ class Condition(models.Model):
         return self.name
     
 class Specialty(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -51,6 +56,7 @@ class Specialty(models.Model):
 # ─── Doctors and Endorsements ─────────────────────
 
 class Doctor(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     first_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50, blank=True, null=True)
@@ -64,9 +70,10 @@ class Doctor(models.Model):
     conditions_treated = models.ManyToManyField(Condition, related_name='doctors')
 
     def __str__(self):
-        return self.name
+        return f"{self.id} : {self.name}"
 
 class Endorsement(models.Model):
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     condition = models.ForeignKey(Condition, on_delete=models.CASCADE)
@@ -80,7 +87,7 @@ class Endorsement(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} endorsed {self.doctor.name} for {self.condition.name} on {self.created_at.date()}"
+        return f"{self.id} id {self.user.username} endorsed {self.doctor.name} for {self.condition.name} on {self.created_at.date()}"
 
 
 # ─── Indexing Optimization ────────────────────────
