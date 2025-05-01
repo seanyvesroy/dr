@@ -37,6 +37,10 @@ class ZipCode(models.Model):
 class User(AbstractUser):
     zip_code = models.ForeignKey(ZipCode, null=True, blank=True, on_delete=models.SET_NULL)
     conditions = models.ManyToManyField("Condition", blank=True)
+    
+    def __str__(self):
+        return f"{self.username} : {self.conditions.all()}"
+    
 
 class Condition(models.Model):
     id = models.AutoField(primary_key=True)

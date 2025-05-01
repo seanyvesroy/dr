@@ -6,8 +6,8 @@
     <meta charset = "UTF-8">
     <title>AvouchMD</title>
     <link rel = "stylesheet" href = "{% static 'style.css' %}">
-    <link rel = "stylesheet" href = "{% static 'layout.css' %}?v=5">
-    <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}?v=6">
+    <link rel = "stylesheet" href = "{% static 'layout.css' %}">
+    <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}">
 </head>
 <body>
 <header id="navbar">
@@ -55,16 +55,7 @@
     </div>
 
     <div class="filter-item">
-        <input type="submit" value="Submit" style="
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #9E829C;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        ">
+        <input type="submit" value="Submit" class="submit-btn">
     </div>
 </form>
 
@@ -102,7 +93,7 @@
             </div>
             {% if user.is_authenticated %}
                 <button class="endorse-btn" onclick="openEndorseModal('{{ doctor.id }}')">
-                    I have seen this doctor
+                    This is <br> my doctor!
                 </button>
             {% endif %}
         </div>
@@ -146,20 +137,20 @@
     const doctorsData = JSON.parse('{{ doctors_json|escapejs }}');
     
     // Function to open the modal
-    function openEndorseModal(doctorId) {
+    function openEndorseModal(doctorId, conditionsList) {
         const modal = document.getElementById('endorseModal');
         document.getElementById('doctorId').value = doctorId;  // Set the hidden doctorId input value
         modal.style.display = "block";  // Show the modal
         
         // Get conditions for this doctor and populate the form
-        const conditionsList = document.getElementById('conditionsList');
+        //const conditionsList = document.getElementById('conditionsList');
         conditionsList.innerHTML = '';  // Clear the existing conditions list
         
         // Find the doctor by ID (loop through doctors dynamically rendered by Django)
         const doctor = doctorsData.find(d => d.pk === doctorId);  // Adjusted to work with 'pk' (primary key)
     
-        if (doctor) {
-            doctor.fields.conditions_treated.forEach(condition => {
+        if (user) {
+            user.conditions.forEach(condition => {
                 const div = document.createElement('div');
                 div.innerHTML = `
                     <label>

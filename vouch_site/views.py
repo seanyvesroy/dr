@@ -149,7 +149,8 @@ def endorse_doctor(request):
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
     
     doctor_id = request.POST.get('doctor_id')
-    conditions = User.objects(id=request.user.id).values_list('conditions', flat=True)
+    conditions = request.user.conditions.all()
+
     
     try:
         doctor = Doctor.objects.get(id=doctor_id)
@@ -168,6 +169,7 @@ def endorse_doctor(request):
     except (Doctor.DoesNotExist, Condition.DoesNotExist):
         return JsonResponse({'error': 'Invalid doctor or condition'}, status=400)
 
+@login_required
 def endorse_view(request):
-    conditions = Condition.objects.all()  # Fetch all conditions from the database
+    conditions = request.user.all()  # Fetch all conditions from the database
     return render(request, 'vouch/endorse.html', {'conditions': conditions})

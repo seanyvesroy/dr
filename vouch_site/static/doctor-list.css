@@ -32,7 +32,17 @@
     max-width: 200px; /* Never wider than 200px */
     box-sizing: border-box; /* Prevents padding from making them overflow */
 }
-
+.endorse-btn,
+input[type="submit" i] {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #9E829C;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
 @media (max-width: 600px) {
     .filters {
         flex-direction: column;
