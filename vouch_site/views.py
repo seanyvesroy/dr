@@ -166,3 +166,8 @@ def search_view(request):
     doctors_json = serializers.serialize('json', doctors)
     
     return render(request, 'vouch/search.html', {'doctors_json': doctors_json})
+
+
+def endorse_view(request):
+    conditions = Condition.objects.all()  # Fetch all conditions from the database
+    return render(request, 'vouch/endorse.html', {'conditions': conditions})
