@@ -130,19 +130,30 @@ input[type="submit" i] {
 /* Modal Content */
 .modal-content {
     background-color: white;
-    margin: 15% auto;
-    padding: 20px;
+    margin: 5% auto;         /* Reduced vertical margin so it's higher on screen */
+    padding: 40px;           /* More spacious padding */
     border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
+    width: 90%;              /* Wider modal */
+    max-width: 800px;        /* Larger max width */
+    height: 70%;            /* Adjusts to content */
+    border-radius: 8px;      /* Optional: rounded corners */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
 }
 
-/* Close button */
+
+
 .close {
-    color: #000000;
-    float: right;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    background: none;
+    border: none;
     cursor: pointer;
 }
+
 
 .close:hover,
 .close:focus {
@@ -182,4 +193,22 @@ input[type="submit" i] {
 
 .choices__button {
     color: white;
+}
+/* Limit dropdown height */
+.choices__list--dropdown {
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 9999; /* Ensure it stays above other elements */
+}
+.modal-footer {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+}
+
+
+.modal-footer .endorse-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }

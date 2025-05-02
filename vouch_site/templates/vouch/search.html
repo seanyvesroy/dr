@@ -95,9 +95,10 @@
                 
             </div>
             {% if user.is_authenticated %}
-                <button class="endorse-btn" onclick="openEndorseModal('{{ doctor.id }}')">
-                    This is <br> my doctor!
-                </button>
+            <button class="endorse-btn" onclick="openEndorseModal('{{ doctor.id }}', '{{ doctor.name }}')">
+                This is <br> my doctor!
+            </button>
+            
             {% endif %}
         </div>
     {% empty %}
@@ -109,7 +110,7 @@
     <div class="modal-content">
         <!-- Close button -->
         <span class="close">&times;</span>
-        <h2>Endorse Doctor</h2>
+        <h2>Endorse Dr. <span id="doctorNameHeader"></span></h2>
         <form id="endorseForm" method="POST" action="/vouch_site/endorse/">
             {% csrf_token %}
             <input type="hidden" id="doctorId" name="doctor_id" value="">
@@ -120,9 +121,9 @@
                     <option value="{{ condition.id }}">{{ condition.name }}</option>
                 {% endfor %}
             </select>            
-        
-            <div id="conditionsList"></div>
-            <button type="submit" class="submit-btn">Submit Endorsement</button>
+            <div class="modal-footer">
+                <button type="submit" class="endorse-btn">Endorse</button>
+              </div>
         </form>
         <div id="endorseSuccessMessage" style="color: green; display: none; margin-top: 10px;">
             Endorsement(s) submitted successfully!
@@ -142,18 +143,20 @@
     const doctorsData = JSON.parse('{{ doctors_json|escapejs }}');
     
     // Function to open the modal
-    function openEndorseModal(doctorId, conditionsList) {
+    function openEndorseModal(doctorId, doctorName) {
         sessionStorage.setItem('scrollY', window.scrollY);
         const modal = document.getElementById('endorseModal');
-        document.getElementById('doctorId').value = doctorId;  // Set the hidden doctorId input value
-        modal.style.display = "block";  // Show the modal
-        
+        document.getElementById('doctorId').value = doctorId;
+        document.getElementById('doctorNameHeader').textContent = doctorName;  // <- Set the header
+        modal.style.display = "block";
+
+
         // Get conditions for this doctor and populate the form
         //const conditionsList = document.getElementById('conditionsList');
-        conditionsList.innerHTML = '';  // Clear the existing conditions list
+        //conditionsList.innerHTML = '';  // Clear the existing conditions list
         
         // Find the doctor by ID (loop through doctors dynamically rendered by Django)
-        const doctor = doctorsData.find(d => d.pk === doctorId);  // Adjusted to work with 'pk' (primary key)
+        //const doctor = doctorsData.find(d => d.pk === doctorId);  // Adjusted to work with 'pk' (primary key)
     }
 </script>
 <script>
