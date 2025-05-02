@@ -52,7 +52,7 @@ def search(request):
             for endorsement in endorsements:
                 doctor_endorsements[endorsement.doctor.id][endorsement.condition.id] += 1
             
-            doctors_json = serializers.serialize('json', doctors)
+            #doctors_json = serializers.serialize('json', doctors)
             if request.user.is_authenticated:
                 # Fetch the user's conditions from the database
                 user_conditions = request.user.conditions.all()
@@ -64,7 +64,7 @@ def search(request):
                 'doctors': doctors,#_json,
                 'doctor_endorsements': doctor_endorsements,
                 'conditions': user_conditions,
-                'doctors_json': doctors_json,
+                #'doctors_json': doctors_json,
             }
             return render(request, 'vouch/search.html', context)
     else:
@@ -149,6 +149,7 @@ def signup(request):
             return render(request, "vouch/index.html", {'message': 'User created successfully.'})
     return render(request, "vouch/signup.html")
 
+
 @login_required
 @require_POST
 @csrf_protect
@@ -164,6 +165,7 @@ def endorse_doctor(request):
     except Doctor.DoesNotExist:
         return JsonResponse({'error': 'Doctor not found.'}, status=404)
 
+    endorsement_count = 0  # Track the total endorsement count for this doctor
     for condition_id in condition_ids:
         try:
             condition = Condition.objects.get(id=condition_id)
@@ -173,16 +175,25 @@ def endorse_doctor(request):
                 doctor.conditions_treated.add(condition)
 
             # Create endorsement if it doesn't already exist
-            Endorsement.objects.get_or_create(
+            endorsement, created = Endorsement.objects.get_or_create(
                 doctor=doctor,
                 condition=condition,
                 user=request.user
             )
 
+            # Increment the endorsement count if new endorsement was created
+            if created:
+                endorsement_count += 1
+
         except Condition.DoesNotExist:
             continue  # Skip invalid condition IDs
 
-    return JsonResponse({'success': True})
+    return JsonResponse({
+        'success': True,
+        'message': 'Endorsement successful!',
+        'doctorId': doctor.id,
+        'newCount': endorsement_count
+    })
 
 @login_required
 def endorse_view(request):

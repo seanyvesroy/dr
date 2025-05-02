@@ -161,7 +161,12 @@ input[type="submit" i] {
     text-decoration: none;
     cursor: pointer;
 }
-/* Override Choices.js styling to match site */
+
+
+.conditions-treated option.is-highlighted {
+    background-color: #9E829C !important; /* your purple */
+    color: white; /* for better contrast */
+}
 .choices-inner-custom .choices__inner {
     background-color: #f4f4f4;
     border-radius: 4px;
@@ -211,4 +216,9 @@ input[type="submit" i] {
     position: absolute;
     bottom: 0;
     right: 0;
+}
+select option:hover
+{
+    background-color: #9E829C; /* your purple */
+    color: white;
 }

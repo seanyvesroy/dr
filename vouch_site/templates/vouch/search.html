@@ -3,251 +3,415 @@
 {% load custom_tags %}
 <html lang="en">
 <head>
-    <meta charset = "UTF-8">
-    <title>AvouchMD</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-    <link rel = "stylesheet" href = "{% static 'style.css' %}">
-    <link rel = "stylesheet" href = "{% static 'layout.css' %}">
-    <link rel = "stylesheet" href = "{% static 'doctor-list.css' %}">
-    
+  <meta charset="UTF-8">
+  <title>AvouchMD</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+  <style>
+    :root {
+      --bs-primary: #522A50;
+      --bs-secondary: #9E829C;
+      --bs-light: #F0EFF4;
+      --bs-body-bg: #F0EFF4;
+      --bs-body-color: #000;
+      --bs-link-color: var(--bs-secondary);
+      --bs-link-hover-color: #8b708a;
+    }
+  
+    body {
+      background-color: var(--bs-body-bg);
+      color: var(--bs-body-color);
+    }
+  
+    /* Navbar */
+    .navbar {
+      background-color: var(--bs-primary) !important;
+    }
+  
+    .navbar .nav-link,
+    .navbar-brand {
+      color: var(--bs-light) !important;
+    }
+  
+    .navbar .nav-link:hover {
+      color: var(--bs-secondary) !important;
+    }
+  
+    /* Footer */
+    .footer {
+      background-color: var(--bs-primary);
+      color: var(--bs-light);
+      padding: 1rem;
+      text-align: center;
+    }
+  
+    .footer a {
+      color: var(--bs-secondary);
+    }
+  
+    /* Buttons */
+    .btn-success,
+    .btn-primary,
+    .btn-secondary {
+      background-color: var(--bs-secondary) !important;
+      border-color: var(--bs-secondary) !important;
+      color: white !important;
+    }
+  
+    .btn-success:hover,
+    .btn-success:focus,
+    .btn-success:active,
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active,
+    .btn-secondary:hover,
+    .btn-secondary:focus,
+    .btn-secondary:active {
+      background-color: #8b708a !important;
+      border-color: #8b708a !important;
+      color: white !important;
+      box-shadow: none !important;
+    }
+  
+    /* Card styling */
+    .card {
+      background-color: #ffffff;
+      border-left: 5px solid var(--bs-primary);
+    }
+  
+    /* Doctor card custom component */
+    .doctor-card {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background-color: white;
+      border-left: 5px solid var(--bs-primary);
+      border-radius: 0.5rem;
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+    }
+  
+    .doctor-card img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+  
+    .endorse-btn {
+      background-color: var(--bs-secondary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      margin-top: 1rem;
+      border-radius: 0.25rem;
+    }
+  
+    /* Inputs and forms */
+    input[type="text"],
+    input[type="password"],
+    textarea,
+    select {
+      border: 1px solid var(--bs-secondary);
+      border-radius: 0.25rem;
+      padding: 0.5rem;
+      background-color: white;
+    }
+  
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.2rem rgba(82, 42, 80, 0.25);
+    }
+  
+    /* Headings and links */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--bs-primary);
+    }
+  
+    a {
+      color: var(--bs-secondary);
+    }
+  
+    a:hover {
+      color: #8b708a;
+    }
+  
+    /* Alerts and messages */
+    .alert {
+      border-left: 5px solid var(--bs-primary);
+    }
+  
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  
+    .text-primary {
+      color: var(--bs-primary) !important;
+    }
+  
+    .text-secondary {
+      color: var(--bs-secondary) !important;
+    }
+  
+    .bg-primary {
+      background-color: var(--bs-primary) !important;
+    }
+  
+    .bg-secondary {
+      background-color: var(--bs-secondary) !important;
+    }
+  
+    .bg-light {
+      background-color: var(--bs-light) !important;
+    }
+    input.form-control,
+    input.form-select,
+    select.form-control,
+    select.form-select {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    outline: none;
+    border-color: var(--bs-primary);
+  
+    }
+        /* Standardize height and font across inputs and select */
+    #filterForm .form-control,
+    #filterForm .form-select,
+    #filterForm button {
+    height: 40px;
+    font-size: 14px;
+    padding: 6px 12px;
+    }
+
+    /* Ensure the button aligns nicely with inputs */
+    #filterForm .btn {
+    height: 40px;
+    font-size: 14px;
+    line-height: 1;
+    }
+
+  </style>
+  
 </head>
-<body>
-<header id="navbar">
-    <nav>
-        <ul class="left">
-            <li><a href="/vouch_site/">Home</a></li>
-            <li><a href="/vouch_site/search/">Find a Doctor</a></li>
-        </ul>
-        <ul class="right">
-            {% if user.is_authenticated %}
-                <li><a href="/vouch_site/logout/">Logout</a></li>
-            {% else %}
-                <li><a href="/vouch_site/login/">Login/Sign-Up</a></li>
-            {% endif %}
-        </ul>
-    </nav>
-</header>
-
-<form action="/vouch_site/search/" method="post" class="filters">
-    {% csrf_token %}
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4">
+          <a class="navbar-brand" href="/vouch_site/">AvouchMD</a>
+          <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto">
+              <li class="nav-item"><a class="nav-link" href="/vouch_site/search/">Find a Doctor</a></li>
+            </ul>
+            <ul class="navbar-nav">
+              {% if user.is_authenticated %}
+                <li class="nav-item"><a class="nav-link" href="/vouch_site/logout/">Logout</a></li>
+              {% else %}
+                <li class="nav-item"><a class="nav-link" href="/vouch_site/login/">Login/Sign-Up</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        </nav>
+      </header>
     
-    <div class="filter-item">
-        {{ form.fName.label_tag }}
-        {{ form.fName }}
-    </div>
+      <!-- Filter/Search Form -->
+      <div class="bg-light py-3 border-bottom">
+        <div class="container">
+          <form action="/vouch_site/search/" method="post" id="filterForm" class="row g-3">
+            {% csrf_token %}
+            <div class="col-md-2">
+              <label class="form-label">{{ form.fName.label }}</label>
+              {{ form.fName|add_class:"form-control" }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">{{ form.lName.label }}</label>
+              {{ form.lName|add_class:"form-control" }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">{{ form.specialty.label }}</label>
+              {{ form.specialty|add_class:"form-control" }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">{{ form.conditions_treated.label }}</label>
+              {{ form.conditions_treated|add_class:"form-select" }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">{{ form.zip_code.label }}</label>
+              {{ form.zip_code|add_class:"form-control" }}
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+          </form>
+        </div>
+      </div>
+  <main class="flex-grow-1 container my-4">
+  <!-- Doctor Cards -->
+  <div class="container">
+    <div class="d-flex flex-column gap-4">
+      {% for doctor in doctors %}
+      <div class="card w-100 p-3 shadow" data-doctor-id="{{ doctor.id }}">
+        <div class="row g-0 align-items-center">
+            <div class="col-md-2 text-center">
+                <img src="{{ doctor.photo.url }}" alt="Dr. {{ doctor.name }}" class="img-fluid rounded-circle" style="max-height: 120px;">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">Dr. {{ doctor.name }}</h5>
+                    <p class="card-text mb-1">{{ doctor.address }}</p>
+                    <p class="card-text mb-1">{{ doctor.phone }}</p>
+                    <p class="card-text"><a href="{{ doctor.website }}" target="_blank">Visit Website</a></p>
     
-    <div class="filter-item">
-        {{ form.lName.label_tag }}
-        {{ form.lName }}
-    </div>
+                    <h6>Specialty:</h6>
+                    <p>{{ doctor.specialty.name }}</p>
     
-    <div class="filter-item">
-        {{ form.specialty.label_tag }}
-        {{ form.specialty }}
-    </div>
-    
-    <div class="filter-item">
-        {{ form.conditions_treated.label_tag }}
-        {{ form.conditions_treated }}
-    </div>
-    
-    <div class="filter-item">
-        {{ form.zip_code.label_tag }}
-        {{ form.zip_code }}
-    </div>
-
-    <div class="filter-item">
-        <input type="submit" value="Submit" class="submit-btn">
-    </div>
-</form>
-
-
-
-<div class="container">
-    {% for doctor in doctors %}
-        <div class="doctor-card">
-            <img src="{{ doctor.photo.url }}" alt="Dr. {{ doctor.name }}">
-            <div class="doctor-details">
-                <h3>Dr. {{ doctor.name }}</h3>
-                <p>{{ doctor.address }}</p>
-                <p>{{ doctor.phone }}</p>
-                <p><a href="{{ doctor.website }}" target="_blank">Visit Website</a></p>
-                
-                <h4>Specialty:</h4>
-                <p>{{ doctor.specialty.name }}</p>
-
-                <h4>Conditions Treated:</h4>
-                <ul class="conditions-treated">
-                    {% for condition in doctor.conditions_treated.all %}
-                        {% with doctor_endorsements|dict_key:doctor.id as endorsements %}
-                            {% with endorsements|dict_key:condition.id as count %}
-                                <li>
-                                    {{ condition.name }}
-                                    {% if count %}
-                                        ({{ count }} endorsement)
-                                    {% endif %}
-                                </li>
-                            {% endwith %}
-                        {% endwith %}
-                    {% endfor %}
-                </ul>
-                
+                    <h6>Conditions Treated:</h6>
+                    <ul class="mb-0">
+                        {% for condition in doctor.conditions_treated.all %}
+                            <li>
+                                {{ condition.name }}
+                                {% with doctor_endorsements|dict_key:doctor.id as endorsements %}
+                                    {% with endorsements|dict_key:condition.id as count %}
+                                        {% if count %}
+                                            ({{ count }} endorsement)
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endwith %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
             {% if user.is_authenticated %}
-            <button class="endorse-btn" onclick="openEndorseModal('{{ doctor.id }}', '{{ doctor.name }}')">
-                This is <br> my doctor!
-            </button>
-            
+                <div class="col-md-2 text-center">
+                    <button class="btn btn-success mt-2" onclick="openEndorseModal('{{ doctor.id }}', '{{ doctor.name }}')">
+                        This is <br> my doctor!
+                    </button>
+                </div>
             {% endif %}
         </div>
-    {% empty %}
-        <p>No doctors found matching your filters.</p>
-    {% endfor %}
-</div>
-
-<div id="endorseModal" class="modal">
-    <div class="modal-content">
-        <!-- Close button -->
-        <span class="close">&times;</span>
-        <h2>Endorse Dr. <span id="doctorNameHeader"></span></h2>
-        <form id="endorseForm" method="POST" action="/vouch_site/endorse/">
-            {% csrf_token %}
-            <input type="hidden" id="doctorId" name="doctor_id" value="">
-            
-            <p>Please select the conditions you were treated for:</p>
-            <select id="conditionsDropdown" name="conditions[]" multiple>
-                {% for condition in conditions %}
-                    <option value="{{ condition.id }}">{{ condition.name }}</option>
-                {% endfor %}
-            </select>            
-            <div class="modal-footer">
-                <button type="submit" class="endorse-btn">Endorse</button>
-              </div>
-        </form>
-        <div id="endorseSuccessMessage" style="color: green; display: none; margin-top: 10px;">
-            Endorsement(s) submitted successfully!
-        </div>
     </div>
-</div>
-
-<footer>
-    <div class="footer">
-        <p>&copy; 2024 AvouchMD.</p>
-        <p>Contact Us <a href="/vouch_site/contact/">Here</a></p>
-    </div>
-</footer>
-
-<script>
-    // Assign the serialized doctors data to a JavaScript variable
-    const doctorsData = JSON.parse('{{ doctors_json|escapejs }}');
     
-    // Function to open the modal
+      {% empty %}
+        <p>No doctors found matching your filters.</p>
+      {% endfor %}
+    </div>  
+  </div>
+  </main>
+
+  <!-- Endorse Modal -->
+  <div class="modal fade" id="endorseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Endorse Dr. <span id="doctorNameHeader"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="endorseForm" method="POST" action="/vouch_site/endorse/">
+          {% csrf_token %}
+          <div class="modal-body">
+            <input type="hidden" id="doctorId" name="doctor_id" value="">
+            <p>Please select the conditions you were treated for:</p>
+            <select id="conditionsDropdown" name="conditions[]" class="form-select" multiple>
+              {% for condition in conditions %}
+                <option value="{{ condition.id }}">{{ condition.name }}</option>
+              {% endfor %}
+            </select>
+            <div id="endorseSuccessMessage" class="text-success mt-3 d-none">
+              Endorsement(s) submitted successfully!
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Endorse</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2024 AvouchMD.</p>
+    <p>Contact Us <a href="/vouch_site/contact/">Here</a></p>
+  </footer>
+  
+
+
+  <!-- Scripts -->
+  <script>
+    const doctorsData = JSON.parse('{{ doctors_json|escapejs }}');
+
     function openEndorseModal(doctorId, doctorName) {
         sessionStorage.setItem('scrollY', window.scrollY);
-        const modal = document.getElementById('endorseModal');
         document.getElementById('doctorId').value = doctorId;
-        document.getElementById('doctorNameHeader').textContent = doctorName;  // <- Set the header
-        modal.style.display = "block";
-
-
-        // Get conditions for this doctor and populate the form
-        //const conditionsList = document.getElementById('conditionsList');
-        //conditionsList.innerHTML = '';  // Clear the existing conditions list
-        
-        // Find the doctor by ID (loop through doctors dynamically rendered by Django)
-        //const doctor = doctorsData.find(d => d.pk === doctorId);  // Adjusted to work with 'pk' (primary key)
-    }
-</script>
-<script>
-    // Close modal when the user clicks the close button (×)
-    const modal = document.getElementById('endorseModal');
-    const closeButton = document.querySelector('.close');
-
-    closeButton.onclick = function() {
-        modal.style.display = "none";
+        document.getElementById('doctorNameHeader').textContent = doctorName;
+        const modal = new bootstrap.Modal(document.getElementById('endorseModal'));
+        modal.show();
     }
 
-    // Close modal when the user clicks outside of the modal content
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-
-    // Function to open the modal and populate the doctor ID
-    function openModal(doctorId) {
-        const doctorIdInput = document.getElementById('doctorId');
-        doctorIdInput.value = doctorId;
-        modal.style.display = "block";
-    }
-</script>
-<script>
     document.addEventListener('DOMContentLoaded', function () {
         const conditionDropdown = document.getElementById('conditionsDropdown');
-        const choices = new Choices(conditionDropdown, {
+        new Choices(conditionDropdown, {
             removeItemButton: true,
             placeholderValue: 'Select your conditions',
-            searchPlaceholderValue: 'Search conditions',
-            classNames: {
-                containerInner: 'choices-inner-custom', // custom class for styling
-            }
+            searchPlaceholderValue: 'Search conditions'
         });
+    });
+
+    document.getElementById('endorseForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+    const modal = document.getElementById('endorseModal');
+
+    // Send the form data via AJAX
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Display success message
+            document.getElementById('endorseSuccessMessage').classList.remove('d-none');
+
+            // Update the endorsement count for the doctor card
+            const doctorCard = document.querySelector(`[data-doctor-id="${data.doctorId}"]`);
+            const endorsementsList = doctorCard.querySelector('.endorsements-list');
+            endorsementsList.innerHTML = `${data.newCount} endorsement${data.newCount > 1 ? 's' : ''}`;
+
+            // Hide the modal and reset the form after a short delay
+            setTimeout(() => {
+                modal.style.display = "none";
+                document.getElementById('endorseSuccessMessage').classList.add('d-none');
+            }, 1000);  // 1 second delay
+        } else {
+            alert('Something went wrong: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while submitting the endorsement.');
+    });
+});
+
+    window.addEventListener('load', () => {
+        const scrollY = sessionStorage.getItem('scrollY');
+        if (scrollY !== null) {
+            window.scrollTo(0, parseInt(scrollY));
+            sessionStorage.removeItem('scrollY');
+        }
     });
 </script>
-<script>
-    document.getElementById('endorseForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-    
-        const form = event.target;
-        const formData = new FormData(form);
-        const modal = document.getElementById('endorseModal');
-    
-        fetch(form.action, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-            },
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Optional: show a temporary success message
-                const successMsg = document.createElement('p');
-                successMsg.textContent = "Endorsement submitted successfully!";
-                successMsg.style.color = "green";
-                form.appendChild(successMsg);
-    
-                // Close the modal after a short delay
-                setTimeout(() => {
-                    modal.style.display = "none";
-                    window.location.reload();  // Then refresh the page
-                }, 1000); // 1 second delay
-            } else {
-                alert('Something went wrong: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while submitting the endorsement.');
-        });
-    });
-    </script>
-    <script>
-        window.addEventListener('load', () => {
-            const scrollY = sessionStorage.getItem('scrollY');
-            if (scrollY !== null) {
-                window.scrollTo(0, parseInt(scrollY));
-                sessionStorage.removeItem('scrollY');  // Clean up after restoring
-            }
-        });
-        </script>
-        
-    
 
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
