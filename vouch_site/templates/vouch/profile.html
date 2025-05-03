@@ -187,20 +187,10 @@
     
             <!-- Profile Update Form -->
             <section class="my-4">
-                <h3>Update Profile</h3>
-                <form method="POST" action="{% url 'profile' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        {{ form.username }}
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        {{ form.email }}
-                    </div>
+          
                     <!-- Add any other fields you want to allow for the user to update -->
-                    <button type="submit" class="btn btn-success">Update Profile</button>
-                </form>
+                    <a href="/vouch_site/profile/edit/" class="btn btn-primary">Update Profile</a>
+
             </section>
         </div>
     </main>

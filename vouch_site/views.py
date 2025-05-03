@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse   
 from .models import Doctor, User, Endorsement, Condition
 from django.db.models import Count
-from .forms import DoctorSearchForm,UserProfileForm
+from .forms import DoctorSearchForm,UserProfileForm, UpdateProfileForm
 from collections import defaultdict
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
@@ -224,4 +224,44 @@ def profile(request):
     
     return render(request, 'vouch/profile.html', context)
 
-    
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import Condition, Doctor, Endorsement
+from .forms import UpdateProfileForm
+
+@login_required
+def update_profile(request):
+    user = request.user
+
+    if request.method == 'POST':
+        form = UpdateProfileForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+
+            # Update conditions
+            condition_ids = request.POST.getlist('conditions')
+            user.conditions.set(Condition.objects.filter(id__in=condition_ids))
+
+            # Remove endorsements
+            endorsement_ids_to_remove = request.POST.getlist('remove_endorsements')
+            user.endorsement_set.filter(id__in=endorsement_ids_to_remove).delete()
+
+            return redirect('profile')
+    else:
+        form = UpdateProfileForm(instance=user)
+
+    # This runs for both GET and if the POST had invalid form data
+    endorsed_doctors = Doctor.objects.filter(endorsement__user=user).distinct()
+    doctor_endorsements = {
+        endorsement.doctor_id: endorsement.id
+        for endorsement in Endorsement.objects.filter(user=user)
+    }
+
+    context = {
+        'form': form,
+        'all_conditions': Condition.objects.all(),
+        'user_conditions': user.conditions.all(),
+        'endorsed_doctors': endorsed_doctors,
+        'doctor_endorsements': doctor_endorsements,
+    }
+    return render(request, 'vouch/update_profile.html', context)

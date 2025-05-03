@@ -36,3 +36,8 @@ class UserProfileForm(forms.ModelForm):
             'zip_code': 'Zip Code',
             'conditions': 'Conditions',
         }
+
+class UpdateProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name']
