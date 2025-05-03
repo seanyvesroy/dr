@@ -1,5 +1,8 @@
 from django import forms
 from .models import Specialty, Condition, ZipCode, User
+from django_select2.forms import Select2MultipleWidget
+
+# Assuming Condition is your model
 
 class DoctorSearchForm(forms.Form):
     fName = forms.CharField(max_length=100, required=False, label="First Name")
@@ -23,12 +26,14 @@ class DoctorSearchForm(forms.Form):
         empty_label="Select a Zip Code"
     )
 
+
+
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'zip_code', 'conditions']
         widgets = {
-            'conditions': forms.CheckboxSelectMultiple(),
+            'conditions': Select2MultipleWidget,
         }
         labels = {
             'username': 'Username',

@@ -203,31 +203,31 @@ def endorse_view(request):
 @login_required
 def profile(request):
     if request.method == 'POST':
-        # Handle profile update with the form
+        # remove as this will not be used in the profile page
         form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
-            form.save()  # Save the updated user info
-            return redirect('profile')  # Redirect back to the profile page after update
+            form.save()  
+            return redirect('profile')  
     else:
-        # Prepopulate the form with the current user's information
         form = UserProfileForm(instance=request.user)
-    
-    conditions = request.user.conditions.all()
-    doctors = Doctor.objects.filter(endorsement__user=request.user).prefetch_related('endorsement_set')
-    
-    context = {
-        'user': request.user,
-        'conditions': conditions,
-        'doctors': doctors,
-        'form': form,  # Pass the form to the template
-    }
-    
-    return render(request, 'vouch/profile.html', context)
+        user = request.user
+        conditions = user.conditions.all()
+        conditions = request.user.conditions.all()
+        doctors = Doctor.objects.filter(endorsement__user=request.user).distinct().prefetch_related('endorsement_set')
+        doctor_endorsements = {}
+        for doctor in doctors:
+            endorsements = doctor.endorsement_set.filter(user=user).select_related('condition')
+            doctor_endorsements[doctor.id] = [e.condition.name for e in endorsements]
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from .models import Condition, Doctor, Endorsement
-from .forms import UpdateProfileForm
+        context = {
+            'doctor_endorsements': doctor_endorsements,
+            'user': request.user,
+            'conditions': conditions,
+            'doctors': doctors,
+            'form': form,  # Pass the form to the template
+        }
+        
+        return render(request, 'vouch/profile.html', context)
 
 @login_required
 def update_profile(request):
@@ -238,30 +238,26 @@ def update_profile(request):
         if form.is_valid():
             form.save()
 
-            # Update conditions
+            # Update user conditions
             condition_ids = request.POST.getlist('conditions')
             user.conditions.set(Condition.objects.filter(id__in=condition_ids))
 
-            # Remove endorsements
+            # Remove selected endorsements
             endorsement_ids_to_remove = request.POST.getlist('remove_endorsements')
-            user.endorsement_set.filter(id__in=endorsement_ids_to_remove).delete()
+            Endorsement.objects.filter(id__in=endorsement_ids_to_remove, user=user).delete()
 
             return redirect('profile')
     else:
         form = UpdateProfileForm(instance=user)
 
-    # This runs for both GET and if the POST had invalid form data
-    endorsed_doctors = Doctor.objects.filter(endorsement__user=user).distinct()
-    doctor_endorsements = {
-        endorsement.doctor_id: endorsement.id
-        for endorsement in Endorsement.objects.filter(user=user)
-    }
+    # Always get individual endorsements for the user
+    endorsements = Endorsement.objects.filter(user=user).select_related('doctor', 'condition')
 
     context = {
         'form': form,
         'all_conditions': Condition.objects.all(),
         'user_conditions': user.conditions.all(),
-        'endorsed_doctors': endorsed_doctors,
-        'doctor_endorsements': doctor_endorsements,
+        'endorsements': endorsements,
     }
     return render(request, 'vouch/update_profile.html', context)
+

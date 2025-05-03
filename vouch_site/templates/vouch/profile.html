@@ -176,19 +176,30 @@
             <section class="my-4">
                 <h3>Endorsed Doctors</h3>
                 {% if doctors %}
-                    <ul class="list-group">
-                        {% for doctor in doctors %}
-                            <li class="list-group-item">
-                                <strong>{{ doctor.name }}</strong><br>
-                                Specialty: {{ doctor.specialty }}<br>
-                                Phone: {{ doctor.phone_number }}<br>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                  <ul class="list-group">
+                    {% for doctor in doctors %}
+                      <li class="list-group-item">
+                        <strong>{{ doctor.name }}</strong><br>
+                        Specialty: {{ doctor.specialty }}<br>
+                        Phone: {{ doctor.phone_number }}<br>
+                        {% if doctor.id in doctor_endorsements %}
+                          <div class="mt-2">
+                            <strong>Endorsed For:</strong>
+                            <ul>
+                              {% for condition in doctor_endorsements|dict_get:doctor.id %}
+                                <li>{{ condition }}</li>
+                              {% endfor %}
+                            </ul>
+                          </div>
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
                 {% else %}
-                    <p>No doctors endorsed yet.</p>
+                  <p>No doctors endorsed yet.</p>
                 {% endif %}
-            </section>
+              </section>
+              
     
             <!-- Profile Update Form -->
             <section class="my-4">
