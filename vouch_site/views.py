@@ -199,3 +199,21 @@ def endorse_doctor(request):
 def endorse_view(request):
     conditions = request.user.all()  # Fetch all conditions from the database
     return render(request, 'vouch/endorse.html', {'conditions': conditions})
+
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        # Handle profile update logic here
+        pass
+    else:
+        # Fetch user profile data from the database
+        user = request.user
+        conditions = user.conditions.all()
+        doctors = Doctor.objects.filter(endorsement__user=user).prefetch_related('endorsement_set')
+        context = {
+            'user': user,
+            'conditions': conditions,
+            'doctors': doctors,
+        }
+        return render(request, 'vouch/profile.html', context)
+    
