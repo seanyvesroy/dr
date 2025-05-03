@@ -22,3 +22,17 @@ class DoctorSearchForm(forms.Form):
         required=False,
         empty_label="Select a Zip Code"
     )
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'zip_code', 'conditions']
+        widgets = {
+            'conditions': forms.CheckboxSelectMultiple(),
+        }
+        labels = {
+            'username': 'Username',
+            'email': 'Email',
+            'zip_code': 'Zip Code',
+            'conditions': 'Conditions',
+        }

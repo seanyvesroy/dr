@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse   
 from .models import Doctor, User, Endorsement, Condition
 from django.db.models import Count
-from .forms import DoctorSearchForm
+from .forms import DoctorSearchForm,UserProfileForm
 from collections import defaultdict
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
@@ -203,17 +203,25 @@ def endorse_view(request):
 @login_required
 def profile(request):
     if request.method == 'POST':
-        # Handle profile update logic here
-        pass
+        # Handle profile update with the form
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()  # Save the updated user info
+            return redirect('profile')  # Redirect back to the profile page after update
     else:
-        # Fetch user profile data from the database
-        user = request.user
-        conditions = user.conditions.all()
-        doctors = Doctor.objects.filter(endorsement__user=user).prefetch_related('endorsement_set')
-        context = {
-            'user': user,
-            'conditions': conditions,
-            'doctors': doctors,
-        }
-        return render(request, 'vouch/profile.html', context)
+        # Prepopulate the form with the current user's information
+        form = UserProfileForm(instance=request.user)
+    
+    conditions = request.user.conditions.all()
+    doctors = Doctor.objects.filter(endorsement__user=request.user).prefetch_related('endorsement_set')
+    
+    context = {
+        'user': request.user,
+        'conditions': conditions,
+        'doctors': doctors,
+        'form': form,  # Pass the form to the template
+    }
+    
+    return render(request, 'vouch/profile.html', context)
+
     
