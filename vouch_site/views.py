@@ -22,6 +22,8 @@ def index(request):
     
 #    return render(request, 'vouch/search.html', {'doctors_json': doctors_json})
 
+from django.core.serializers import serialize
+
 def search(request):
     if request.method == 'POST':
         form = DoctorSearchForm(request.POST)
@@ -45,32 +47,30 @@ def search(request):
                 filter_args['conditions_treated'] = conditions_treated
 
             doctors = Doctor.objects.filter(**filter_args).distinct()
+            doctors_json = serialize('json', doctors)
 
-            # Build endorsement counts per doctor + condition
             doctor_endorsements = defaultdict(lambda: defaultdict(int))
             endorsements = Endorsement.objects.all()
             for endorsement in endorsements:
                 doctor_endorsements[endorsement.doctor.id][endorsement.condition.id] += 1
-            
-            #doctors_json = serializers.serialize('json', doctors)
+
             if request.user.is_authenticated:
-                # Fetch the user's conditions from the database
                 user_conditions = request.user.conditions.all()
             else:
-                # If the user is not authenticated, set user_conditions to an empty list
                 user_conditions = []
+
             context = {
                 'form': form,
-                'doctors': doctors,#_json,
+                'doctors': doctors,
                 'doctor_endorsements': doctor_endorsements,
                 'conditions': user_conditions,
-                #'doctors_json': doctors_json,
+                'doctors_json': doctors_json,
             }
             return render(request, 'vouch/search.html', context)
     else:
         form = DoctorSearchForm()
 
-    return render(request, 'vouch/search.html', {'form': form})
+    return render(request, 'vouch/search.html', {'form': form, 'doctors_json': '[]'})
 
 def loginAttempt(request):
     if request.method == 'GET':
@@ -188,13 +188,8 @@ def endorse_doctor(request):
         except Condition.DoesNotExist:
             continue  # Skip invalid condition IDs
 
-    return JsonResponse({
-        'success': True,
-        'message': 'Endorsement successful!',
-        'doctorId': doctor.id,
-        'newCount': endorsement_count
-    })
-
+    return JsonResponse({'success': True, 'doctorId': doctor.id})
+    
 @login_required
 def endorse_view(request):
     conditions = request.user.all()  # Fetch all conditions from the database
@@ -232,17 +227,24 @@ def profile(request):
 @login_required
 def update_profile(request):
     user = request.user
+    current_conditions = set(user.conditions.all())
 
     if request.method == 'POST':
         form = UpdateProfileForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
 
-            # Update user conditions
-            condition_ids = request.POST.getlist('conditions')
-            user.conditions.set(Condition.objects.filter(id__in=condition_ids))
+            # Get new condition IDs and update
+            new_condition_ids = request.POST.getlist('conditions')
+            new_conditions = set(Condition.objects.filter(id__in=new_condition_ids))
+            user.conditions.set(new_conditions)
 
-            # Remove selected endorsements
+            # Remove endorsements for removed conditions
+            removed_conditions = current_conditions - new_conditions
+            for condition in removed_conditions:
+                Endorsement.objects.filter(user=user, condition=condition).delete()
+
+            # Remove selected endorsements by checkbox
             endorsement_ids_to_remove = request.POST.getlist('remove_endorsements')
             Endorsement.objects.filter(id__in=endorsement_ids_to_remove, user=user).delete()
 
@@ -250,7 +252,6 @@ def update_profile(request):
     else:
         form = UpdateProfileForm(instance=user)
 
-    # Always get individual endorsements for the user
     endorsements = Endorsement.objects.filter(user=user).select_related('doctor', 'condition')
 
     context = {
@@ -260,4 +261,3 @@ def update_profile(request):
         'endorsements': endorsements,
     }
     return render(request, 'vouch/update_profile.html', context)
-

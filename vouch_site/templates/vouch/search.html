@@ -7,7 +7,9 @@
   <title>AvouchMD</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  
   <style>
     :root {
       --bs-primary: #522A50;
@@ -287,12 +289,12 @@
       {% for doctor in doctors %}
       <div class="card w-100 p-3 shadow" data-doctor-id="{{ doctor.id }}">
         <div class="row g-0 align-items-center">
-            <div class="col-md-2 text-center">
-                <img src="{{ doctor.photo.url }}" alt="Dr. {{ doctor.name }}" class="img-fluid rounded-circle" style="max-height: 120px;">
-            </div>
-            <div class="col-md-8">
-                <div class="card-body">
-                    <h5 class="card-title">Dr. {{ doctor.name }}</h5>
+          <div class="col-md-2 text-center">
+            <img src="{{ doctor.photo.url }}" …>
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <h5 class="card-title">Dr. {{ doctor.name }}</h5>
                     <p class="card-text mb-1">{{ doctor.address }}</p>
                     <p class="card-text mb-1">{{ doctor.phone }}</p>
                     <p class="card-text"><a href="{{ doctor.website }}" target="_blank">Visit Website</a></p>
@@ -302,21 +304,24 @@
     
                     <h6>Conditions Treated:</h6>
                     <ul class="mb-0">
-                        {% for condition in doctor.conditions_treated.all %}
-                            <li>
-                                {{ condition.name }}
-                                {% with doctor_endorsements|dict_key:doctor.id as endorsements %}
-                                    {% with endorsements|dict_key:condition.id as count %}
-                                        {% if count %}
-                                            ({{ count }} endorsement)
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endwith %}
-                            </li>
-                        {% endfor %}
+                      {% for condition in doctor.conditions_treated.all %}
+                        <li>
+                          {{ condition.name }}
+                          <span
+                            class="endorsement-count"
+                            data-condition-id="{{ condition.id }}"
+                          >
+                            {% with doctor_endorsements|dict_key:doctor.id as conds %}
+                              {% with conds|dict_key:condition.id as count %}
+                                {% if count %} ({{ count }} endorsement{{ count|pluralize }}){% endif %}
+                              {% endwith %}
+                            {% endwith %}
+                          </span>
+                        </li>
+                      {% endfor %}
                     </ul>
+                  </div>
                 </div>
-            </div>
             {% if user.is_authenticated %}
                 <div class="col-md-2 text-center">
                     <button class="btn btn-success mt-2" onclick="openEndorseModal('{{ doctor.id }}', '{{ doctor.name }}')">
@@ -374,8 +379,10 @@
 
   <!-- Scripts -->
   <script>
+    // Parse doctor data for use (only works if this script is rendered in a template context)
     const doctorsData = JSON.parse('{{ doctors_json|escapejs }}');
 
+    // Show modal and fill hidden inputs
     function openEndorseModal(doctorId, doctorName) {
         sessionStorage.setItem('scrollY', window.scrollY);
         document.getElementById('doctorId').value = doctorId;
@@ -384,6 +391,7 @@
         modal.show();
     }
 
+    // Choices.js for the multi-select
     document.addEventListener('DOMContentLoaded', function () {
         const conditionDropdown = document.getElementById('conditionsDropdown');
         new Choices(conditionDropdown, {
@@ -393,47 +401,80 @@
         });
     });
 
-    document.getElementById('endorseForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+    // Submit form via AJAX and update the UI
+    document.getElementById('endorseForm').addEventListener('submit', function (event) {
+        event.preventDefault();
 
-    const form = event.target;
-    const formData = new FormData(form);
-    const modal = document.getElementById('endorseModal');
+        const form = event.target;
+        const formData = new FormData(form);
+        const modal = document.getElementById('endorseModal');
+        const bsModal = bootstrap.Modal.getInstance(modal);
 
-    // Send the form data via AJAX
-    fetch(form.action, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Display success message
-            document.getElementById('endorseSuccessMessage').classList.remove('d-none');
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Non-200 response');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                document.getElementById('endorseSuccessMessage').classList.remove('d-none');
 
-            // Update the endorsement count for the doctor card
-            const doctorCard = document.querySelector(`[data-doctor-id="${data.doctorId}"]`);
-            const endorsementsList = doctorCard.querySelector('.endorsements-list');
-            endorsementsList.innerHTML = `${data.newCount} endorsement${data.newCount > 1 ? 's' : ''}`;
+                const doctorCard = document.querySelector(`[data-doctor-id="${data.doctorId}"]`);
+                const selectedConditions = formData.getAll('conditions[]');
 
-            // Hide the modal and reset the form after a short delay
-            setTimeout(() => {
-                modal.style.display = "none";
-                document.getElementById('endorseSuccessMessage').classList.add('d-none');
-            }, 1000);  // 1 second delay
-        } else {
-            alert('Something went wrong: ' + (data.error || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while submitting the endorsement.');
+                selectedConditions.forEach(conditionId => {
+                  const countSpan = doctorCard.querySelector(`.endorsement-count[data-condition-id="${conditionId}"]`);
+                  const optionElement = form.querySelector(`option[value="${conditionId}"]`);
+                  const conditionText = optionElement ? optionElement.textContent.trim() : 'Unknown condition';
+
+                  if (countSpan) {
+                      const oldCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
+                      const newCount = oldCount + 1;
+                      countSpan.textContent = `(${newCount} endorsement${newCount > 1 ? 's' : ''})`;
+                  } else {
+                      const newSpan = document.createElement('span');
+                      newSpan.classList.add('endorsement-count');
+                      newSpan.dataset.conditionId = conditionId;
+                      newSpan.textContent = `(1 endorsement)`;
+
+                      const listItems = doctorCard.querySelectorAll('li');
+                      listItems.forEach(li => {
+                          if (li.textContent.trim().startsWith(conditionText)) {
+                              li.appendChild(newSpan);
+                          }
+                      });
+                  }
+              });
+
+
+                // Close modal after short delay and reset form
+                setTimeout(() => {
+                    bsModal.hide();
+                    document.getElementById('endorseSuccessMessage').classList.add('d-none');
+                    form.reset();
+                    document.activeElement.blur(); // <== Moves focus off the modal
+                }, 1000);
+
+            } else {
+                alert('Something went wrong: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the endorsement.');
+        });
     });
-});
 
+    // Restore scroll position after modal
     window.addEventListener('load', () => {
         const scrollY = sessionStorage.getItem('scrollY');
         if (scrollY !== null) {
@@ -442,7 +483,6 @@
         }
     });
 </script>
-
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
