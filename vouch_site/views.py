@@ -165,7 +165,7 @@ def signup(request):
 @csrf_protect
 def endorse_doctor(request):
     doctor_id = request.POST.get('doctor_id')
-    condition_ids = request.POST.getlist('conditions[]')  # Fetch multiple condition IDs
+    condition_ids = request.POST.getlist('conditions[]')
 
     if not doctor_id or not condition_ids:
         return JsonResponse({'error': 'Doctor ID and condition(s) are required.'}, status=400)
@@ -175,30 +175,41 @@ def endorse_doctor(request):
     except Doctor.DoesNotExist:
         return JsonResponse({'error': 'Doctor not found.'}, status=404)
 
-    endorsement_count = 0  # Track the total endorsement count for this doctor
-    for condition_id in condition_ids:
+    # Convert all to integers for comparison
+    condition_ids_int = [int(cid) for cid in condition_ids]
+
+    # Check if user already endorsed this doctor for any of these conditions
+    existing_endorsements = Endorsement.objects.filter(
+        doctor=doctor,
+        user=request.user,
+        condition__id__in=condition_ids_int
+    ).values_list('condition_id', flat=True)
+
+    if existing_endorsements:
+        return JsonResponse({
+            'error': 'You have already endorsed this doctor for one or more of the selected conditions.',
+            'duplicates': list(existing_endorsements)
+        }, status=400)
+
+    # Proceed only if no duplicates found
+    for condition_id in condition_ids_int:
         try:
             condition = Condition.objects.get(id=condition_id)
 
-            # Add condition to doctor if not already associated
             if condition not in doctor.conditions_treated.all():
                 doctor.conditions_treated.add(condition)
 
-            # Create endorsement if it doesn't already exist
-            endorsement, created = Endorsement.objects.get_or_create(
+            Endorsement.objects.create(
                 doctor=doctor,
                 condition=condition,
                 user=request.user
             )
 
-            # Increment the endorsement count if new endorsement was created
-            if created:
-                endorsement_count += 1
-
         except Condition.DoesNotExist:
-            continue  # Skip invalid condition IDs
+            continue
 
     return JsonResponse({'success': True, 'doctorId': doctor.id})
+
     
 @login_required
 def endorse_view(request):

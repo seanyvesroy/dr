@@ -479,11 +479,12 @@
 
               // Close modal after short delay and reset form
               setTimeout(() => {
-                  bsModal.hide();
-                  
-                  form.reset();
-                  document.activeElement.blur(); // Move focus off modal
-              }, 1000);
+                bsModal.hide();
+                document.getElementById('endorseSuccessMessage').classList.add('d-none'); // Hide success message
+                form.reset();
+                document.activeElement.blur(); // Move focus off modal
+            }, 500);
+
           } else {
                           alert('Something went wrong: ' + (data.error || 'Unknown error'));
             }
