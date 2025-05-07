@@ -422,29 +422,24 @@
           if (response.status < 200 || response.status >= 300) {
             throw new Error(`Unexpected status code: ${response.status}`);
           }
-
             return response.json();
         })
         .then(data => {
           if (data.success) {
-    // Show success message
-              document.getElementById('endorseSuccessMessage').classList.remove('d-none');
-
+            // Show success message
+            document.getElementById('endorseSuccessMessage').classList.remove('d-none');
               const doctorCard = document.querySelector(`[data-doctor-id="${data.doctorId}"]`);
               const selectedConditions = formData.getAll('conditions[]');
-
               // Check for duplicates
               const duplicateConditions = selectedConditions.filter(conditionId => {
                   return userEndorsements.some(e =>
                       e.doctor_id == data.doctorId && e.condition_id == parseInt(conditionId)
                   );
               });
-
               if (duplicateConditions.length > 0) {
                   alert('You have already endorsed this doctor for one or more of the selected conditions.');
                   return;
               }
-
               // Update UI and in-memory userEndorsements
               selectedConditions.forEach(conditionId => {
                   // Add new endorsement to the userEndorsements array
@@ -476,7 +471,6 @@
                       });
                   }
               });
-
               // Close modal after short delay and reset form
               setTimeout(() => {
                 bsModal.hide();
@@ -486,15 +480,13 @@
             }, 500);
 
           } else {
-                          alert('Something went wrong: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(error => {
+            alert('Something went wrong: ' + (data.error || 'Unknown error'));
+          }})
+          .catch(error => {
             console.error('Error:', error);
             alert('An error occurred while submitting the endorsement.');
         });
     });
-
     // Restore scroll position after modal
     window.addEventListener('load', () => {
         const scrollY = sessionStorage.getItem('scrollY');
