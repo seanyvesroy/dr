@@ -458,18 +458,29 @@
                     const newCount = oldCount + 1;
                     countSpan.textContent = `(${newCount} endorsement${newCount > 1 ? 's' : ''})`;
                   } else {
-                      const newSpan = document.createElement('span');
-                      newSpan.classList.add('endorsement-count');
-                      newSpan.dataset.conditionId = conditionId;
-                      newSpan.textContent = `(1 endorsement)`;
+                    const newSpan = document.createElement('span');
+                    newSpan.classList.add('endorsement-count');
+                    newSpan.dataset.conditionId = conditionId;
+                    newSpan.textContent = `(1 endorsement)`;
 
-                      const listItems = doctorCard.querySelectorAll('li');
-                      listItems.forEach(li => {
-                          if (li.textContent.trim().startsWith(conditionText)) {
-                              li.appendChild(newSpan);
-                          }
-                      });
-                  }
+                    let found = false;
+                    const listItems = doctorCard.querySelectorAll('li');
+                    listItems.forEach(li => {
+                        if (li.textContent.trim().startsWith(conditionText)) {
+                            li.appendChild(newSpan);
+                            found = true;
+                        }
+                    });
+
+                    if (!found) {
+                        // If no <li> exists for the condition, create one
+                        const ul = doctorCard.querySelector('ul'); // assumes there's a <ul> in each doctor card
+                        const newLi = document.createElement('li');
+                        newLi.textContent = conditionText + ' ';
+                        newLi.appendChild(newSpan);
+                        ul.appendChild(newLi);
+                    }
+                }
               });
               // Close modal after short delay and reset form
               setTimeout(() => {
