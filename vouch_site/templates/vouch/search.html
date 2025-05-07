@@ -381,6 +381,7 @@
   <script>
     // Parse doctor data for use (only works if this script is rendered in a template context)
     const doctorsData = JSON.parse('{{ doctors_json|escapejs }}');
+    const userEndorsements = JSON.parse('{{ user_endorsements_json|escapejs }}');
 
     // Show modal and fill hidden inputs
     function openEndorseModal(doctorId, doctorName) {
@@ -424,14 +425,33 @@
             return response.json();
         })
         .then(data => {
-            if (data.success) {
-                // Show success message
-                document.getElementById('endorseSuccessMessage').classList.remove('d-none');
+          if (data.success) {
+    // Show success message
+              document.getElementById('endorseSuccessMessage').classList.remove('d-none');
 
-                const doctorCard = document.querySelector(`[data-doctor-id="${data.doctorId}"]`);
-                const selectedConditions = formData.getAll('conditions[]');
+              const doctorCard = document.querySelector(`[data-doctor-id="${data.doctorId}"]`);
+              const selectedConditions = formData.getAll('conditions[]');
 
-                selectedConditions.forEach(conditionId => {
+              // Check for duplicates
+              const duplicateConditions = selectedConditions.filter(conditionId => {
+                  return userEndorsements.some(e =>
+                      e.doctor_id == data.doctorId && e.condition_id == parseInt(conditionId)
+                  );
+              });
+
+              if (duplicateConditions.length > 0) {
+                  alert('You have already endorsed this doctor for one or more of the selected conditions.');
+                  return;
+              }
+
+              // Update UI and in-memory userEndorsements
+              selectedConditions.forEach(conditionId => {
+                  // Add new endorsement to the userEndorsements array
+                  userEndorsements.push({
+                      doctor_id: data.doctorId,
+                      condition_id: parseInt(conditionId)
+                  });
+
                   const countSpan = doctorCard.querySelector(`.endorsement-count[data-condition-id="${conditionId}"]`);
                   const optionElement = form.querySelector(`option[value="${conditionId}"]`);
                   const conditionText = optionElement ? optionElement.textContent.trim() : 'Unknown condition';
@@ -455,18 +475,15 @@
                   }
               });
 
-// TODO WHEN ENDORSEING A DOCTOR, CHECK IF THE DOCTOR IS IN THE USER'S ENDORSEMENTS AND IF SO, DONT ALLOW THE ENDORSEMENT TO BE ADDED AGAIN
-// TODO WHEN ENDORSEING A DOCTOR, AND THE CONDITIONS IS NEW FOR THE DOCTOR, ADD THE CONDITION TO THE DOCTOR'S CONDITIONS TREATED
-                // Close modal after short delay and reset form
-                setTimeout(() => {
-                    bsModal.hide();
-                    document.getElementById('endorseSuccessMessage').classList.add('d-none');
-                    form.reset();
-                    document.activeElement.blur(); // <== Moves focus off the modal
-                }, 1000);
-
-            } else {
-                alert('Something went wrong: ' + (data.error || 'Unknown error'));
+              // Close modal after short delay and reset form
+              setTimeout(() => {
+                  bsModal.hide();
+                  document.getElementById('endorseSuccessMessage').classList.add('d-none');
+                  form.reset();
+                  document.activeElement.blur(); // Move focus off modal
+              }, 1000);
+          } else {
+                          alert('Something went wrong: ' + (data.error || 'Unknown error'));
             }
         })
         .catch(error => {

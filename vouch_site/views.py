@@ -9,7 +9,8 @@ from django.core import serializers
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
-
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 
 def index(request):
     return render(request, "vouch/index.html")
@@ -56,6 +57,14 @@ def search(request):
 
             if request.user.is_authenticated:
                 user_conditions = request.user.conditions.all()
+                user_endorsements = Endorsement.objects.filter(user=request.user)
+                user_endorsements_json = json.dumps([
+                    {
+                        "doctor_id": e.doctor.id,
+                        "condition_id": e.condition.id
+                    }
+                    for e in user_endorsements
+                ], cls=DjangoJSONEncoder)
             else:
                 user_conditions = []
 
@@ -65,6 +74,7 @@ def search(request):
                 'doctor_endorsements': doctor_endorsements,
                 'conditions': user_conditions,
                 'doctors_json': doctors_json,
+                'user_endorsements_json': user_endorsements_json,
             }
             return render(request, 'vouch/search.html', context)
     else:
