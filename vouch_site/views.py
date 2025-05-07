@@ -80,7 +80,7 @@ def search(request):
     else:
         form = DoctorSearchForm()
 
-    return render(request, 'vouch/search.html', {'form': form, 'doctors_json': '[]'})
+    return render(request, 'vouch/search.html', {'form': form, 'doctors_json': '[]', 'user_endorsements_json': '[]'})
 
 def loginAttempt(request):
     if request.method == 'GET':

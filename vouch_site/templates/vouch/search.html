@@ -419,9 +419,10 @@
             body: formData
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Non-200 response');
-            }
+          if (response.status < 200 || response.status >= 300) {
+            throw new Error(`Unexpected status code: ${response.status}`);
+          }
+
             return response.json();
         })
         .then(data => {
@@ -457,9 +458,10 @@
                   const conditionText = optionElement ? optionElement.textContent.trim() : 'Unknown condition';
 
                   if (countSpan) {
-                      const oldCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
-                      const newCount = oldCount + 1;
-                      countSpan.textContent = `(${newCount} endorsement${newCount > 1 ? 's' : ''})`;
+                    const match = countSpan.textContent.match(/\d+/);
+                    const oldCount = match ? parseInt(match[0]) : 0;
+                    const newCount = oldCount + 1;
+                    countSpan.textContent = `(${newCount} endorsement${newCount > 1 ? 's' : ''})`;
                   } else {
                       const newSpan = document.createElement('span');
                       newSpan.classList.add('endorsement-count');
@@ -478,7 +480,7 @@
               // Close modal after short delay and reset form
               setTimeout(() => {
                   bsModal.hide();
-                  document.getElementById('endorseSuccessMessage').classList.add('d-none');
+                  
                   form.reset();
                   document.activeElement.blur(); // Move focus off modal
               }, 1000);
