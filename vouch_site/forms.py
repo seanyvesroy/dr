@@ -26,8 +26,6 @@ class DoctorSearchForm(forms.Form):
         empty_label="Select a Zip Code"
     )
 
-
-
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
