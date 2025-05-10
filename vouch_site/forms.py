@@ -2,8 +2,6 @@ from django import forms
 from .models import Specialty, Condition, ZipCode, User
 from django_select2.forms import Select2MultipleWidget
 
-# Assuming Condition is your model
-
 class DoctorSearchForm(forms.Form):
     fName = forms.CharField(max_length=100, required=False, label="First Name")
     lName = forms.CharField(max_length=100, required=False, label="Last Name")
